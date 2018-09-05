@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameMenuExtender", "GameMenuExtender\GameMenuExtender.csproj", "{262DCC01-85CA-4A9C-A13F-45BE35576E08}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{1E85171E-8BCA-473D-9A01-1D7B41F7258F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomMenuTest", "CustomMenuTest\CustomMenuTest.csproj", "{32B6CE13-C16D-4962-A3F2-B127B767451C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{262DCC01-85CA-4A9C-A13F-45BE35576E08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{262DCC01-85CA-4A9C-A13F-45BE35576E08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{262DCC01-85CA-4A9C-A13F-45BE35576E08}.Debug|x86.ActiveCfg = Debug|x86
+		{262DCC01-85CA-4A9C-A13F-45BE35576E08}.Debug|x86.Build.0 = Debug|x86
+		{262DCC01-85CA-4A9C-A13F-45BE35576E08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{262DCC01-85CA-4A9C-A13F-45BE35576E08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{262DCC01-85CA-4A9C-A13F-45BE35576E08}.Release|x86.ActiveCfg = Release|x86
+		{262DCC01-85CA-4A9C-A13F-45BE35576E08}.Release|x86.Build.0 = Release|x86
+		{32B6CE13-C16D-4962-A3F2-B127B767451C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32B6CE13-C16D-4962-A3F2-B127B767451C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32B6CE13-C16D-4962-A3F2-B127B767451C}.Debug|x86.ActiveCfg = Debug|x86
+		{32B6CE13-C16D-4962-A3F2-B127B767451C}.Debug|x86.Build.0 = Debug|x86
+		{32B6CE13-C16D-4962-A3F2-B127B767451C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32B6CE13-C16D-4962-A3F2-B127B767451C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32B6CE13-C16D-4962-A3F2-B127B767451C}.Release|x86.ActiveCfg = Release|Any CPU
+		{32B6CE13-C16D-4962-A3F2-B127B767451C}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{32B6CE13-C16D-4962-A3F2-B127B767451C} = {1E85171E-8BCA-473D-9A01-1D7B41F7258F}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {37CD5718-F58B-4699-AAD2-DFA74DAEC670}
+	EndGlobalSection
+EndGlobal
