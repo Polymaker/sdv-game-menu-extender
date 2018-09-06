@@ -11,7 +11,9 @@ namespace GameMenuExtender.Menus
     {
         public override bool IsCustom => false;
 
-        public override bool Enabled { get => true; set => throw new NotSupportedException(); }
+		public int TabIndex { get; protected set; }
+
+		public override bool Enabled { get => true; set => throw new NotSupportedException(); }
 
         public override bool Visible { get => true; set => throw new NotSupportedException(); }
 
@@ -19,10 +21,24 @@ namespace GameMenuExtender.Menus
 
         public VanillaTabPage VanillaPage => TabPages.OfType<VanillaTabPage>().FirstOrDefault();
 
-        public VanillaTab(int index, ClickableComponent tab) : base(index)
+		public VanillaTab(int index, ClickableComponent tab)// : base(index)
         {
+			TabIndex = index;
             TabButton = tab;
             Name = tab.name;
-        }
-    }
+		}
+
+		internal void RemoveAllCustomPages()
+		{
+			PageList.RemoveAll(p => p.IsCustom);
+		}
+
+		internal void InitializeLayout()
+		{
+			var curPage = CurrentTabPage.PageWindow;
+			PageExtender.initialize(curPage.xPositionOnScreen, curPage.yPositionOnScreen,
+				curPage.width, curPage.height, curPage.upperRightCloseButton != null);
+			PageExtender.BuildTabButtons();
+		}
+	}
 }

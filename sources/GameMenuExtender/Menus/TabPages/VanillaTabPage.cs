@@ -10,17 +10,7 @@ namespace GameMenuExtender.Menus
     public class VanillaTabPage : GameMenuTabPage
     {
         public override bool IsCustom => false;
-        private DefaultPageParams CtorsParams;
-        private Type PageType;
-
-        internal struct DefaultPageParams
-        {
-            public int x;
-            public int y;
-            public int width;
-            public int height;
-            public bool upperRightCloseButton;
-        }
+		internal CreateMenuPageParams DefaultCtorParams;
 
         internal VanillaTabPage(VanillaTab tab, IClickableMenu window) : base(tab)
         {
@@ -29,7 +19,7 @@ namespace GameMenuExtender.Menus
             Label = tab.Label;
             PageType = window.GetType();
 
-            CtorsParams = new DefaultPageParams()
+            DefaultCtorParams = new CreateMenuPageParams()
             {
                 x = window.xPositionOnScreen,
                 y = window.yPositionOnScreen,
@@ -41,7 +31,8 @@ namespace GameMenuExtender.Menus
 
         internal void InstanciateNewPage()
         {
-
-        }
+			PageWindow = CreatePageInstance(PageType, DefaultCtorParams);
+		}
+		
     }
 }

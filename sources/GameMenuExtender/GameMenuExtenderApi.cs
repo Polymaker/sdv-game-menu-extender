@@ -32,14 +32,16 @@ namespace GameMenuExtender
 
         private void SaveEvents_AfterLoad(object sender, EventArgs e)
         {
-            MenuManager.Initialize();
-        }
+            MenuManager.InitializeVanillaMenus();
+			MenuManager.InitializeCustomMenus(CustomMenuEntries);
+
+		}
 
         private void MenuEvents_MenuChanged(object sender, EventArgsClickableMenuChanged e)
 		{
             if (e.NewMenu is GameMenu && MenuManager != null)
             {
-                MenuManager.Menu = (GameMenu)e.NewMenu;
+				MenuManager.SetCurrentMenu((GameMenu)e.NewMenu);
                 GameEvents.FourthUpdateTick += OnGameMenuShown;
             }
 		}
@@ -108,13 +110,13 @@ namespace GameMenuExtender
 							newPage.MenuInstance = currentPage;
 						}
 
-						pageExtender.OriginalPage = pageExtender.InstanciateCustomPage(defaultPageType);
+						//pageExtender.OriginalPage = pageExtender.InstanciateCustomPage(defaultPageType);
 					}
-					else
-						pageExtender.OriginalPage = currentPage;
+					//else
+					//	pageExtender.OriginalPage = currentPage;
 
 
-					pageExtender.InitializePageExtensions(CustomMenuEntries.Where(m => m.MenuTab == menuTab && m.Type == MenuType.TabPage));
+					//pageExtender.InitializePageExtensions(CustomMenuEntries.Where(m => m.MenuTab == menuTab && m.Type == MenuType.TabPage));
 
 					pageList[i] = pageExtender;
 				}

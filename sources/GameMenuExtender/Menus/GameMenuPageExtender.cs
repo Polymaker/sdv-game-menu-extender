@@ -12,23 +12,23 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameMenuExtender
+namespace GameMenuExtender.Menus
 {
-	internal /*sealed*/ class GameMenuPageExtender : IClickableMenu
+	internal sealed class GameMenuPageExtender : IClickableMenu
 	{
 		public GameMenuTab MenuTab { get; private set; }
 
-		public IClickableMenu OriginalPage { get; internal set; }
+		public GameMenuManager Manager => MenuTab.Manager;
 
-		public IClickableMenu CurrentOverride => CurrentPage?.Page ?? OriginalPage;
+		public IClickableMenu OriginalPage => MenuTab.IsVanilla ? (MenuTab as VanillaTab).VanillaPage.PageWindow : null;
 
-		public bool SuppressOriginal { get; protected set; }
+		public IClickableMenu CurrentOverride => MenuTab.Manager.CurrentTabPage?.PageWindow;
 
-		private List<PageExtensionTab> PageExtensions;
+		//private List<PageExtensionTab> PageExtensions;
 
-		private int currentPageIndex;
+		//private int currentPageIndex;
 
-		private PageExtensionTab CurrentPage => PageExtensions[currentPageIndex];
+		//private PageExtensionTab CurrentPage => PageExtensions[currentPageIndex];
 
 		private const int TabPaddingX = 32;
 		private const int TabPaddingY = 24;
@@ -42,50 +42,13 @@ namespace GameMenuExtender
 		public GameMenuPageExtender(GameMenuTab tab)
 		{
 			MenuTab = tab;
-			PageExtensions = new List<PageExtensionTab>();
+			//PageExtensions = new List<PageExtensionTab>();
 		}
 
 		public void Initialize(IClickableMenu sourePage)
 		{
 			initialize(sourePage.xPositionOnScreen, sourePage.yPositionOnScreen,
 				sourePage.width, sourePage.height, sourePage.upperRightCloseButton != null);
-		}
-
-		public void InitializePageExtensions(IEnumerable<MenuPageEntry> entries)
-		{
-
-			PageExtensions.Clear();
-            if (OriginalPage != null)
-            {
-                PageExtensions.Add(new PageExtensionTab()
-                {
-                    Index = 0,
-                    Page = OriginalPage,
-                    Label = MenuTab.Label
-                });
-            }
-			
-
-			foreach (var pageEntry in entries)
-			{
-				var customPage = pageEntry.MenuInstance ?? InstanciateCustomPage(pageEntry.PageClass);
-				if(customPage != null)
-				{
-					PageExtensions.Add(new PageExtensionTab()
-					{
-						Index = PageExtensions.Count,
-						Page = customPage,
-						Label = pageEntry.Label,
-						PageInfo = pageEntry
-					});
-				}
-				else
-				{
-					
-				}
-			}
-			UpdateCustomTabs();
-			UpdateSubPages();
 		}
 
         public IClickableMenu InstanciateCustomPage(Type customPageType)
@@ -123,43 +86,41 @@ namespace GameMenuExtender
 			return null;
 		}
 
-		private void UpdateCustomTabs()
-		{
-
-		}
-
-		private void UpdateSubPages()
+		internal void BuildTabButtons()
 		{
 			int currentPosY = yPositionOnScreen + 80;
             int maxLabelWidth = 0;
 
-			foreach (var pageTab in PageExtensions)
+			foreach(var tabPage in Manager.CurrentTab.TabPages)
 			{
-				if (!pageTab.Visible)
-					continue;
-
-				var labelSize = Game1.smallFont.MeasureString(pageTab.Label);
-				int tabWidth = (int)labelSize.X + TabPaddingX;
-				int tabHeight = (int)labelSize.Y + TabPaddingY;
-                if (tabWidth > maxLabelWidth)
-                    maxLabelWidth = tabWidth;
-				var tabRect = new Rectangle(xPositionOnScreen - tabWidth + 26, currentPosY + LeftSideStartOffsetY, tabWidth, tabHeight);
-				currentPosY += tabHeight + 10;
-
-				var subPageName = pageTab.PageInfo != null ? $"{MenuTab.Name}_{pageTab.PageInfo.ID}" : $"{MenuTab.Name}_Default";
-				pageTab.TabButton = new ClickableComponent(tabRect, subPageName, pageTab.Label);
+				if (tabPage.Visible)
+				{
+					var labelSize = Game1.smallFont.MeasureString(tabPage.Label);
+					int tabWidth = (int)labelSize.X + TabPaddingX;
+					int tabHeight = (int)labelSize.Y + TabPaddingY;
+					if (tabWidth > maxLabelWidth)
+						maxLabelWidth = tabWidth;
+					var tabRect = new Rectangle(xPositionOnScreen - tabWidth + 26, currentPosY + LeftSideStartOffsetY, tabWidth, tabHeight);
+					currentPosY += tabHeight + 10;
+					
+					tabPage.TabPageButton = new ClickableComponent(tabRect, tabPage.UniqueID, tabPage.Label);
+				}
+				else
+				{
+					tabPage.TabPageButton = null;
+				}
 			}
 
             if (maxLabelWidth > 0)
             {
-                foreach (var pageTab in PageExtensions)
-                {
-                    if (pageTab.TabButton != null)
-                    {
-                        pageTab.TabButton.bounds.Width = maxLabelWidth;
-                        pageTab.TabButton.bounds.X = xPositionOnScreen - maxLabelWidth + 26;
-                    }
-                }
+				foreach (var tabPage in Manager.CurrentTab.TabPages)
+				{
+					if(tabPage.TabPageButton != null)
+					{
+						tabPage.TabPageButton.bounds.Width = maxLabelWidth;
+						tabPage.TabPageButton.bounds.X = xPositionOnScreen - maxLabelWidth + 26;
+					}
+				}
             }
 
         }
@@ -431,77 +392,42 @@ namespace GameMenuExtender
 
 		#region Custom tabs handling
 
-		public class PageExtensionTab
-		{
-			public int Index { get; set; }
-
-			public string Label { get; set; }
-
-			public IClickableMenu Page { get; set; }
-
-			public ClickableComponent TabButton { get; set; }
-
-			public MenuPageEntry PageInfo { get; set; }
-
-			public bool Visible => PageInfo?.Visible ?? true;
-
-			public bool Enabled => PageInfo?.Enabled ?? true;
-
-			public Rectangle Bounds => TabButton?.bounds ?? new Rectangle();
-
-			//public PageExtensionTab(IClickableMenu page)
-			//{
-			//	Page = page;
-			//	Label = "default";
-			//}
-		}
-
-		public class CustomMenuTab
-		{
-			public int Index { get; set; }
-
-			public string Label { get; set; }
-
-			public GameMenuPageExtender Page { get; set; }
-
-			public ClickableComponent TabButton { get; set; }
-
-			public MenuPageEntry TabInfo { get; set; }
-
-			public bool Visible => TabInfo?.Visible ?? true;
-
-			public bool Enabled => TabInfo?.Enabled ?? true;
-
-			public Rectangle Bounds => TabButton?.bounds ?? new Rectangle();
-		}
-
         public override void draw(SpriteBatch b)
         {
-            if (PageExtensions.Count(p => p.Visible) > 1)
-                DrawPageExtensionTabs(b);
+			//Draw custom tabs (at the top)
+			Manager.DrawCustomTabs(b);
 
-            if (CurrentOverride != null)
-                CurrentOverride.draw(b);
-            else
-                base.draw(b);
-        }
+			//Draw sub-pages tab buttons
+			DrawPagesTabButtons(b);
 
-        private void DrawPageExtensionTabs(SpriteBatch b)
-		{
-            foreach (var pageTab in PageExtensions)
+			if (Manager.CurrentTabPage != null && Manager.CurrentTabPage.PageWindow != null)
 			{
-                if (pageTab.Visible && pageTab.TabButton != null)
-					DrawPageExtensionTab(b, pageTab);
-            }
-        }
+				//Draw the page
+				Manager.CurrentTabPage.PageWindow.draw(b);
+			}
+			else
+				base.draw(b);
+		}
 
-		private void DrawPageExtensionTab(SpriteBatch b, PageExtensionTab pageTab)
+        private void DrawPagesTabButtons(SpriteBatch b)
 		{
-            bool isCurrent = (pageTab == CurrentPage);
+			if (Manager.CurrentTab == null || Manager.CurrentTab.TabPages.Count(p => p.Visible) == 1)
+				return;
 
-            var buttonColor = isCurrent ? Color.White : Color.LightGray;
+			foreach (var tabPage in Manager.CurrentTab.TabPages)
+			{
+				if (tabPage.Visible && tabPage.TabPageButton != null)
+					DrawPageExtensionTab(b, tabPage);
+			}
+		}
 
-            var clipRect = new Rectangle(0, pageTab.Bounds.Y - 10, xPositionOnScreen + 16, pageTab.Bounds.Height + 20);
+		private void DrawPageExtensionTab(SpriteBatch b, GameMenuTabPage pageTab)
+		{
+            bool isCurrent = pageTab.IsSelected;
+
+            var buttonColor = pageTab.IsSelected ? Color.White : Color.LightGray;
+			var buttonBounds = pageTab.TabPageButton.bounds;
+            var clipRect = new Rectangle(0, buttonBounds.Y - 10, xPositionOnScreen + 16, buttonBounds.Height + 20);
 
             if (isCurrent)
             {
@@ -511,28 +437,28 @@ namespace GameMenuExtender
             using (new GraphicClip(b, clipRect))
             {
                 IClickableMenu.drawTextureBox(b, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
-                pageTab.Bounds.X, pageTab.Bounds.Y, pageTab.Bounds.Width + 30, pageTab.Bounds.Height, buttonColor, 1f, isCurrent);
+				buttonBounds.X, buttonBounds.Y, buttonBounds.Width + 30, buttonBounds.Height, buttonColor, 1f, pageTab.IsSelected);
 
                 b.DrawString(Game1.smallFont, pageTab.Label,
                         new Vector2(
-                            pageTab.Bounds.X + (TabPaddingX / 2),
-                            pageTab.Bounds.Y + (TabPaddingY / 2) + 3),
+                            buttonBounds.X + (TabPaddingX / 2),
+							buttonBounds.Y + (TabPaddingY / 2) + 3),
                         Game1.textColor);
             }
 		}
 
 		private bool HandleReceiveLeftClick(int x, int y, bool playSound)
 		{
-            if (PageExtensions.Count(p => p.Visible) == 1)
-                return false;
+			if (Manager.CurrentTab == null || Manager.CurrentTab.TabPages.Count(p => p.Visible) == 1)
+				return false;
 
-            foreach (var pageTab in PageExtensions)
+			foreach (var tabPage in Manager.CurrentTab.TabPages)
 			{
-				if (pageTab.Visible && pageTab.Enabled && pageTab.TabButton != null && pageTab.TabButton.containsPoint(x, y))
+				if (tabPage.Visible && tabPage.TabPageButton != null && tabPage.TabPageButton.containsPoint(x, y))
 				{
-					currentPageIndex = pageTab.Index;
-                    Game1.playSound("smallSelect");
-                    return true;
+					MenuTab.SelectTabPage(tabPage);
+					Game1.playSound("smallSelect");
+					return true;
 				}
 			}
 			return false;

@@ -21,7 +21,7 @@ namespace CustomMenuTest
 			var menuAPI = Helper.ModRegistry.GetApi<IGameMenuExtenderApi>("Polymaker.GameMenuExtender");
 
             menuAPI.RegisterGameMenuSubPage("Social", "My Page", typeof(MyCustomMenuPage));
-            menuAPI.RegisterGameMenuTab("MyTab", typeof(MyCustomMenuPage));
+            //menuAPI.RegisterGameMenuTab("MyTab", typeof(MyCustomMenuPage));
         }
 	}
 

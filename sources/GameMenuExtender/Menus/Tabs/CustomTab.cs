@@ -11,7 +11,9 @@ namespace GameMenuExtender.Menus
     {
         public override bool IsCustom => true;
 
-        public CustomTab(int index, string name) : base(index)
+		public int DisplayIndex { get; set; }
+
+        public CustomTab(string name)
         {
             Name = name;
         }
