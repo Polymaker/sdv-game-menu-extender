@@ -20,9 +20,9 @@ namespace GameMenuExtender.Menus
 
 		public GameMenuManager Manager => MenuTab.Manager;
 
-		public IClickableMenu OriginalPage => MenuTab.IsVanilla ? (MenuTab as VanillaTab).VanillaPage.PageWindow : null;
+		//public IClickableMenu OriginalPage => MenuTab.CurrentTabPage.IsVanilla ? Manager.RealCurrentTab.VanillaPage.PageWindow : null;
 
-		public IClickableMenu CurrentOverride => MenuTab.Manager.CurrentTabPage?.PageWindow;
+		public IClickableMenu CurrentOverride => Manager.CurrentTabPage?.PageWindow;
 
 		//private List<PageExtensionTab> PageExtensions;
 
@@ -34,15 +34,9 @@ namespace GameMenuExtender.Menus
 		private const int TabPaddingY = 24;
         private const int LeftSideStartOffsetY = 20;
 
-		static GameMenuPageExtender()
-		{
-			InitializeRedirections();
-		}
-
 		public GameMenuPageExtender(GameMenuTab tab)
 		{
 			MenuTab = tab;
-			//PageExtensions = new List<PageExtensionTab>();
 		}
 
 		public void Initialize(IClickableMenu sourePage)
@@ -50,41 +44,7 @@ namespace GameMenuExtender.Menus
 			initialize(sourePage.xPositionOnScreen, sourePage.yPositionOnScreen,
 				sourePage.width, sourePage.height, sourePage.upperRightCloseButton != null);
 		}
-
-        public IClickableMenu InstanciateCustomPage(Type customPageType)
-        {
-            var ctors = customPageType.GetConstructors();
-            var getParamTypes = (Func<ConstructorInfo, Type[]>)(c =>
-            {
-                return c.GetParameters().Select(p => p.ParameterType).ToArray();
-            });
-            
-            try
-			{
-                if (ctors.Any(c => getParamTypes(c) == new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(bool) }))
-                {
-                    return (IClickableMenu)Activator.CreateInstance(customPageType,
-                        new object[] { xPositionOnScreen, yPositionOnScreen, width, height, upperRightCloseButton != null });
-                }
-                else if (ctors.Any(c => getParamTypes(c) == new Type[] { typeof(int), typeof(int), typeof(int), typeof(int) }))
-                {
-                    return (IClickableMenu)Activator.CreateInstance(customPageType,
-                        new object[] { xPositionOnScreen, yPositionOnScreen, width, height, upperRightCloseButton != null });
-                }
-                else if (ctors.Any(c => getParamTypes(c).Length == 0))
-                {
-                    var newPage = (IClickableMenu)Activator.CreateInstance(customPageType);
-                    newPage.initialize(xPositionOnScreen, yPositionOnScreen, width, height, upperRightCloseButton != null);
-                    return newPage;
-                }
-            }
-			catch
-			{
-				
-			}
-
-			return null;
-		}
+		
 
 		internal void BuildTabButtons()
 		{
@@ -124,7 +84,6 @@ namespace GameMenuExtender.Menus
             }
 
         }
-
 
 		#region IClickableMenu Redirection
 

@@ -65,7 +65,7 @@
     <Compile Include="GameMenuExtenderApi.cs" />
     <Compile Include="GameMenuExtenderMod.cs" />
     <Compile Include="Menus\GameMenuPageExtender.cs" />
-    <Compile Include="GameMenuTabs.cs" />
+    <Compile Include="Menus\GameMenuTabs.cs" />
     <Compile Include="Helpers\GraphicClip.cs" />
     <Compile Include="Helpers\ModHelper.cs" />
     <Compile Include="IGameMenuExtenderApi.cs" />
