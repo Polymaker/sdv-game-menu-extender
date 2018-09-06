@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameMenuExtender
+namespace GameMenuExtender.Menus
 {
-	public enum MenuType
-	{
-		CustomTab,
-		PageExtension
-	}
+    public enum MenuPageTabsLocation
+    {
+        Left,
+        Bottom
+    }
 }

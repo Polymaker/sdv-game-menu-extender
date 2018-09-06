@@ -1,4 +1,5 @@
-﻿using StardewModdingAPI;
+﻿using GameMenuExtender.Menus;
+using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
@@ -13,30 +14,42 @@ namespace GameMenuExtender
 {
 	public class GameMenuExtenderApi : IGameMenuExtenderApi
 	{
-		public IModHelper Helper { get; private set; }
-		public IMonitor Monitor { get; private set; }
-
-		private List<MenuPageEntry> CustomMenuEntries;
+        private IMod Mod;
+        public IModHelper Helper => Mod.Helper;
+        public IMonitor Monitor => Mod.Monitor;
+        private GameMenuManager MenuManager;
+        private List<MenuPageEntry> CustomMenuEntries;
 		private static int CurrentEntryID;
 
 		public GameMenuExtenderApi(IMod mod)
 		{
-			Helper = mod.Helper;
-			Monitor = mod.Monitor;
-			CustomMenuEntries = new List<MenuPageEntry>();
+            Mod = mod;
+            MenuManager = new GameMenuManager(Mod);
+            CustomMenuEntries = new List<MenuPageEntry>();
 			MenuEvents.MenuChanged += MenuEvents_MenuChanged;
+            SaveEvents.AfterLoad += SaveEvents_AfterLoad;
 		}
 
-		private void MenuEvents_MenuChanged(object sender, EventArgsClickableMenuChanged e)
+        private void SaveEvents_AfterLoad(object sender, EventArgs e)
+        {
+            MenuManager.Initialize();
+        }
+
+        private void MenuEvents_MenuChanged(object sender, EventArgsClickableMenuChanged e)
 		{
-			if(e.NewMenu is GameMenu)
-				GameEvents.FourthUpdateTick += OnGameMenuShown;
+            if (e.NewMenu is GameMenu && MenuManager != null)
+            {
+                MenuManager.Menu = (GameMenu)e.NewMenu;
+                GameEvents.FourthUpdateTick += OnGameMenuShown;
+            }
 		}
 
 		private void OnGameMenuShown(object sender, EventArgs e)
 		{
 			GameEvents.FourthUpdateTick -= OnGameMenuShown;
-			InitializeMenuExtenders();
+            MenuManager.ExtendGameMenu();
+
+            //InitializeMenuExtenders();
 		}
 
 		private void InitializeMenuExtenders()
@@ -63,7 +76,7 @@ namespace GameMenuExtender
 					//	continue;
 
 					var currentPage = pageList[i];
-					var pageExtender = new GameMenuPageExtender(menuTab);
+					var pageExtender = new GameMenuPageExtender(null);
 					pageExtender.Initialize(currentPage);
 					
 					var defaultPageType = GetDefaultTabPageType(menuTab);
@@ -101,7 +114,7 @@ namespace GameMenuExtender
 						pageExtender.OriginalPage = currentPage;
 
 
-					pageExtender.InitializePageExtensions(CustomMenuEntries.Where(m => m.MenuTab == menuTab && m.Type == MenuType.PageExtension));
+					pageExtender.InitializePageExtensions(CustomMenuEntries.Where(m => m.MenuTab == menuTab && m.Type == MenuType.TabPage));
 
 					pageList[i] = pageExtender;
 				}
@@ -132,7 +145,18 @@ namespace GameMenuExtender
 			return null;
 		}
 
-		public void RegisterGameMenuExtension(string targetTab, Type customPageType, string label)
+        public static string GetDefaultTabName(GameMenuTabs tab)
+        {
+            switch (tab)
+            {
+                case GameMenuTabs.Social:
+                    return "Relationships";
+                default:
+                    return tab.ToString();
+            }
+        }
+
+        public void RegisterGameMenuExtension(string targetTab, Type customPageType, string label)
 		{
 			var modInfo = Helper.ModRegistry.GetCallingMod();
 
@@ -142,7 +166,7 @@ namespace GameMenuExtender
 				CustomMenuEntries.Add(new MenuPageEntry()
 				{
 					ID = ++CurrentEntryID,
-					Type = MenuType.PageExtension,
+					Type = MenuType.TabPage,
 					TabName = targetTab,
 					MenuTab = menuTab,
 					PageClass = customPageType,
@@ -151,12 +175,12 @@ namespace GameMenuExtender
 					Label = label
 				});
 			}
-			else if (CustomMenuEntries.Any(m => m.Type == MenuType.CustomTab && m.Label == targetTab))
+			else if (CustomMenuEntries.Any(m => m.Type == MenuType.Tab && m.Label == targetTab))
 			{
 				CustomMenuEntries.Add(new MenuPageEntry()
 				{
 					ID = ++CurrentEntryID,
-					Type = MenuType.PageExtension,
+					Type = MenuType.TabPage,
 					TabName = targetTab,
 					MenuTab = GameMenuTabs.Custom,
 					PageClass = customPageType,
@@ -185,7 +209,7 @@ namespace GameMenuExtender
 				targetTab = GameMenuTabs.Custom;
 
 			if(targetTab == GameMenuTabs.Custom && 
-				!CustomMenuEntries.Any(m=>m.Type == MenuType.CustomTab 
+				!CustomMenuEntries.Any(m=>m.Type == MenuType.Tab 
 				&& m.TabName.Equals(tabName, StringComparison.InvariantCultureIgnoreCase)))
 			{
 				Monitor.Log($"Invalid tab name");
@@ -195,7 +219,7 @@ namespace GameMenuExtender
 			var newMenuPage = new MenuPageEntry()
 			{
 				ID = ++CurrentEntryID,
-				Type = MenuType.PageExtension,
+				Type = MenuType.TabPage,
 				TabName = tabName,
 				MenuTab = targetTab,
 				PageClass = customPageType,
@@ -222,7 +246,7 @@ namespace GameMenuExtender
 			if (!Enum.TryParse(tabName, true, out targetTab))
 				targetTab = GameMenuTabs.Custom;
 
-			if (CustomMenuEntries.Any(m => m.Type == MenuType.CustomTab
+			if (CustomMenuEntries.Any(m => m.Type == MenuType.Tab
 				&& m.TabName.Equals(tabName, StringComparison.InvariantCultureIgnoreCase)))
 			{
 				Monitor.Log($"Invalid tab name");
@@ -232,7 +256,7 @@ namespace GameMenuExtender
 			var newMenuTab = new MenuPageEntry()
 			{
 				ID = ++CurrentEntryID,
-				Type = MenuType.CustomTab,
+				Type = MenuType.Tab,
 				TabName = tabName,
 				MenuTab =  GameMenuTabs.Custom,
 				PageClass = customTabPageType,
@@ -246,6 +270,5 @@ namespace GameMenuExtender
 			return newMenuTab;
 		}
 
-		
 	}
 }

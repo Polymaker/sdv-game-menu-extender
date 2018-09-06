@@ -10,8 +10,6 @@ namespace CustomMenuTest
 {
 	public class CustomMenuTestMod : Mod
 	{
-		
-
 		public override void Entry(IModHelper helper)
 		{
 			GameEvents.FirstUpdateTick += GameEvents_FirstUpdateTick;
@@ -21,12 +19,17 @@ namespace CustomMenuTest
 		{
 			GameEvents.FirstUpdateTick -= GameEvents_FirstUpdateTick;
 			var menuAPI = Helper.ModRegistry.GetApi<IGameMenuExtenderApi>("Polymaker.GameMenuExtender");
-			menuAPI.RegisterGameMenuExtension("Social", typeof(MyCustomMenuPage), "test page");
-		}
+
+            menuAPI.RegisterGameMenuSubPage("Social", "My Page", typeof(MyCustomMenuPage));
+            menuAPI.RegisterGameMenuTab("MyTab", typeof(MyCustomMenuPage));
+        }
 	}
 
 	public interface IGameMenuExtenderApi
 	{
-		void RegisterGameMenuExtension(string targetTab, Type customPageType, string label);
-	}
+		void RegisterGameMenuSubPage(string tabName, string pageName, Type customPageType);
+
+        void RegisterGameMenuTab(string tabName, Type customTabPageType);
+
+    }
 }

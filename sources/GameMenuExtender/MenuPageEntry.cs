@@ -38,7 +38,7 @@ namespace GameMenuExtender
 
 		public MenuPageEntry(string tabName, Type pageType, IManifest owner)
 		{
-			Type = MenuType.CustomTab;
+			Type = MenuType.Tab;
 			MenuTab = GameMenuTabs.Custom;
 			OwnerMod = owner;
 			UniqueID = $"{OwnerMod.UniqueID}.{tabName}";
