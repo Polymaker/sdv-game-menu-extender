@@ -15,7 +15,8 @@ namespace GameMenuExtender
 		static Type ModRegistryType;
 		static Type IModMetadataType;
 		static PropertyInfo IModMetadataManifestProperty;
-		static FieldInfo ModMetadataDictionaryField;
+        static PropertyInfo IModMetadataModProperty;
+        static FieldInfo ModMetadataDictionaryField;
 		static MethodInfo ContainsKeyMethod;
 		static PropertyInfo ItemProperty;
 
@@ -26,8 +27,8 @@ namespace GameMenuExtender
 			ModRegistryType = RegistryField.FieldType;
 			IModMetadataType = typeof(IModRegistry).Assembly.GetType("StardewModdingAPI.Framework.IModMetadata");
 			IModMetadataManifestProperty = IModMetadataType.GetProperty("Manifest");
-
-			var modMetadataDictionaryType = typeof(IDictionary<,>).MakeGenericType(typeof(string), IModMetadataType);
+            IModMetadataModProperty = IModMetadataType.GetProperty("Mod");
+            var modMetadataDictionaryType = typeof(IDictionary<,>).MakeGenericType(typeof(string), IModMetadataType);
 			ContainsKeyMethod = modMetadataDictionaryType.GetMethod("ContainsKey");
 			ItemProperty = modMetadataDictionaryType.GetProperty("Item");
 			ModMetadataDictionaryField = ModRegistryType.GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)
@@ -87,7 +88,14 @@ namespace GameMenuExtender
 			return null;
 		}
 
-		private static bool IsModAssemblyExist(object dict, string assemblyName)
+        public static IMod GetMod(this IModRegistry registryHelper, string uniqueID)
+        {
+
+            return null;
+        }
+
+
+        private static bool IsModAssemblyExist(object dict, string assemblyName)
 		{
 			return (bool)ContainsKeyMethod.Invoke(dict, new object[] { assemblyName });
 		}
