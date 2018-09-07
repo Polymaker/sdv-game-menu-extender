@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace GameMenuExtender
 {
-	public class GameMenuExtenderApi : IGameMenuExtenderApi
+	public class GameMenuExtenderApi
 	{
         private IMod Mod;
         public IModHelper Helper => Mod.Helper;
@@ -28,13 +28,12 @@ namespace GameMenuExtender
             CustomMenuEntries = new List<MenuPageEntry>();
 			MenuEvents.MenuChanged += MenuEvents_MenuChanged;
             SaveEvents.AfterLoad += SaveEvents_AfterLoad;
-		}
+        }
 
         private void SaveEvents_AfterLoad(object sender, EventArgs e)
         {
             MenuManager.InitializeVanillaMenus();
 			MenuManager.InitializeCustomMenus(CustomMenuEntries);
-
 		}
 
         private void MenuEvents_MenuChanged(object sender, EventArgsClickableMenuChanged e)
@@ -50,151 +49,6 @@ namespace GameMenuExtender
 		{
 			GameEvents.FourthUpdateTick -= OnGameMenuShown;
             MenuManager.ExtendGameMenu();
-
-            //InitializeMenuExtenders();
-		}
-
-		private void InitializeMenuExtenders()
-		{
-			if (!(Game1.activeClickableMenu is GameMenu))
-				return;
-
-			var gameMenu = (GameMenu)Game1.activeClickableMenu;
-			var tabList = Helper.Reflection.GetField<List<ClickableComponent>>(gameMenu, "tabs").GetValue();
-			var pageList = Helper.Reflection.GetField<List<IClickableMenu>>(gameMenu, "pages").GetValue();
-
-			CustomMenuEntries.RemoveAll(m => m.OwnerMod == null && m.IsNonApiOverride);
-			CustomMenuEntries.ForEach(m => 
-			{
-				if (m.IsNonApiOverride && m.OwnerMod != null)
-					m.Visible = false;
-			});
-
-			for (int i = 0; i < tabList.Count; i++)
-			{
-				if (Enum.TryParse(tabList[i].name, true, out GameMenuTabs menuTab))
-				{
-					//if (menuTab == GameMenuTabs.Map)
-					//	continue;
-
-					var currentPage = pageList[i];
-					var pageExtender = new GameMenuPageExtender(null);
-					pageExtender.Initialize(currentPage);
-					
-					var defaultPageType = GetDefaultTabPageType(menuTab);
-
-					if (currentPage.GetType() != defaultPageType)
-					{
-						var pageOwnerMod = Helper.ModRegistry.GetModByType(currentPage.GetType());
-						
-						Monitor.Log($"The tab page '{menuTab}' has already been overrided by another mod ({pageOwnerMod?.Name ?? "unknown"})");
-
-						bool customEntryExist = false;
-
-						if (pageOwnerMod != null)
-						{
-							var existingPage = CustomMenuEntries.FirstOrDefault(p => 
-								p.PageClass == currentPage.GetType() && p.OwnerMod == pageOwnerMod && p.IsNonApiOverride);
-
-							if(existingPage != null)
-							{
-								existingPage.Visible = true;
-								customEntryExist = true;
-							}
-						}
-
-						if(!customEntryExist)
-						{
-							var newPage = RegisterGameMenuSubPage(tabList[i].name, pageOwnerMod?.Name ?? "Custom", currentPage.GetType(), pageOwnerMod);
-							newPage.IsNonApiOverride = true;
-							newPage.MenuInstance = currentPage;
-						}
-
-						//pageExtender.OriginalPage = pageExtender.InstanciateCustomPage(defaultPageType);
-					}
-					//else
-					//	pageExtender.OriginalPage = currentPage;
-
-
-					//pageExtender.InitializePageExtensions(CustomMenuEntries.Where(m => m.MenuTab == menuTab && m.Type == MenuType.TabPage));
-
-					pageList[i] = pageExtender;
-				}
-			}
-		}
-
-		private static Type GetDefaultTabPageType(GameMenuTabs tab)
-		{
-			switch (tab)
-			{
-				case GameMenuTabs.Inventory:
-					return typeof(InventoryPage);
-				case GameMenuTabs.Skills:
-					return typeof(SkillsPage);
-				case GameMenuTabs.Social:
-					return typeof(SocialPage);
-				case GameMenuTabs.Map:
-					return typeof(MapPage);
-				case GameMenuTabs.Crafting:
-					return typeof(CraftingPage);
-				case GameMenuTabs.Collections:
-					return typeof(CollectionsPage);
-				case GameMenuTabs.Options:
-					return typeof(OptionsPage);
-				case GameMenuTabs.Exit:
-					return typeof(ExitPage);
-			}
-			return null;
-		}
-
-        public static string GetDefaultTabName(GameMenuTabs tab)
-        {
-            switch (tab)
-            {
-                case GameMenuTabs.Social:
-                    return "Relationships";
-                default:
-                    return tab.ToString();
-            }
-        }
-
-        public void RegisterGameMenuExtension(string targetTab, Type customPageType, string label)
-		{
-			var modInfo = Helper.ModRegistry.GetCallingMod();
-
-			Monitor.Log($"Registering custom page extension for GameMenu '{targetTab}' tab");
-			if (Enum.TryParse(targetTab, true, out GameMenuTabs menuTab))
-			{
-				CustomMenuEntries.Add(new MenuPageEntry()
-				{
-					ID = ++CurrentEntryID,
-					Type = MenuType.TabPage,
-					TabName = targetTab,
-					MenuTab = menuTab,
-					PageClass = customPageType,
-					Visible = true,
-					Enabled = true,
-					Label = label
-				});
-			}
-			else if (CustomMenuEntries.Any(m => m.Type == MenuType.Tab && m.Label == targetTab))
-			{
-				CustomMenuEntries.Add(new MenuPageEntry()
-				{
-					ID = ++CurrentEntryID,
-					Type = MenuType.TabPage,
-					TabName = targetTab,
-					MenuTab = GameMenuTabs.Custom,
-					PageClass = customPageType,
-					Visible = true,
-					Enabled = true,
-					Label = label
-				});
-			}
-			else
-			{
-				Monitor.Log($"Invalid tab name");
-			}
 		}
 
         public void RegisterGameMenuSubPage(string tabName, string pageName, Type customPageType)
@@ -235,12 +89,12 @@ namespace GameMenuExtender
 			return newMenuPage;
 		}
 
-        public void RegisterGameMenuTab(string tabName, Type customTabPageType)
+        public void RegisterGameMenuTab(string tabName, Type customTabPageType, string tabLabel)
         {
-            RegisterGameMenuTab(tabName, customTabPageType, Helper.ModRegistry.GetCallingMod());
+            RegisterGameMenuTab(tabName, customTabPageType, tabLabel, Helper.ModRegistry.GetCallingMod());
         }
 
-        private MenuPageEntry RegisterGameMenuTab(string tabName, Type customTabPageType, IManifest ownerMod)
+        private MenuPageEntry RegisterGameMenuTab(string tabName, Type customTabPageType, string tabLabel, IManifest ownerMod)
 		{
 			Monitor.Log($"Registering custom GameMenu tab ({tabName}:{customTabPageType.Name})");
 
@@ -264,13 +118,12 @@ namespace GameMenuExtender
 				PageClass = customTabPageType,
 				Visible = true,
 				Enabled = true,
-				Label = tabName,
+				Label = tabLabel,
 				OwnerMod = ownerMod
 			};
 
 			CustomMenuEntries.Add(newMenuTab);
 			return newMenuTab;
 		}
-
 	}
 }

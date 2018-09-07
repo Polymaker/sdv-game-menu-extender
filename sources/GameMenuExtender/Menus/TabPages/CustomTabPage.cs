@@ -14,12 +14,16 @@ namespace GameMenuExtender.Menus
 
 		public bool IsNonAPI { get; internal set; }
 
-
-		public CustomTabPage(GameMenuTab tab, IManifest mod, Type pageClass, string name) : base(tab)
+		public CustomTabPage(GameMenuTab tab, IManifest mod, string name, string label, Type pageClass) : base(tab, name)
 		{
 			PageType = pageClass;
-			OwnerMod = mod;
-			Name = name;
+			SourceMod = mod;
+            Label = label;
 		}
-	}
+
+        internal override void InstanciatePageWindow()
+        {
+            PageWindow = CreatePageInstance(PageType, Manager.GameWindowBounds);
+        }
+    }
 }

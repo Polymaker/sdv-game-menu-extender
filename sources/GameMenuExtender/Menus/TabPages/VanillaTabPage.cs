@@ -12,10 +12,9 @@ namespace GameMenuExtender.Menus
         public override bool IsCustom => false;
 		internal CreateMenuPageParams DefaultCtorParams;
 
-        internal VanillaTabPage(VanillaTab tab, IClickableMenu window) : base(tab)
+        internal VanillaTabPage(VanillaTab tab, IClickableMenu window) : base(tab, tab.Name)
         {
             PageWindow = window;
-            Name = tab.Name;
             Label = tab.Label;
             PageType = window.GetType();
 
@@ -29,10 +28,9 @@ namespace GameMenuExtender.Menus
             };
         }
 
-        internal void InstanciateNewPage()
+        internal override void InstanciatePageWindow()
         {
-			PageWindow = CreatePageInstance(PageType, DefaultCtorParams);
-		}
-		
+            PageWindow = CreatePageInstance(PageType, DefaultCtorParams);
+        }
     }
 }

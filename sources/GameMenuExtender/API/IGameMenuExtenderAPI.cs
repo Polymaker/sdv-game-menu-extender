@@ -1,32 +1,11 @@
-﻿using StardewModdingAPI;
-using StardewModdingAPI.Events;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CustomMenuTest
+namespace GameMenuExtender.API
 {
-	public class CustomMenuTestMod : Mod
-	{
-		public override void Entry(IModHelper helper)
-		{
-			GameEvents.FirstUpdateTick += GameEvents_FirstUpdateTick;
-		}
-
-		private void GameEvents_FirstUpdateTick(object sender, EventArgs e)
-		{
-			GameEvents.FirstUpdateTick -= GameEvents_FirstUpdateTick;
-			var menuAPI = Helper.ModRegistry.GetApi<IGameMenuExtenderAPI>("Polymaker.GameMenuExtender");
-
-            menuAPI.RegisterTabPageExtension("Social", "MyPage", "My Page", typeof(MyCustomMenuPage));
-            menuAPI.RegisterCustomTabPage("MyTab","I'm the best", typeof(MyCustomMenuPage));
-            menuAPI.RegisterTabPageExtension($"{ModManifest.Name}.MyTab", "MyPage2", "My Page 2", typeof(MyCustomMenuPage));
-            //menuAPI.RegisterGameMenuTab("MyTab", typeof(MyCustomMenuPage));
-        }
-	}
-
     public interface IGameMenuExtenderAPI
     {
         /// <summary>

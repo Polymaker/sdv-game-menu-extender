@@ -9,19 +9,19 @@ namespace GameMenuExtender.Menus
 {
     public abstract class GameMenuElement
     {
-        internal GameMenuManager Manager { get; set; }
+        internal GameMenuManager Manager { get; private set; }
 
         public int ID { get; internal set; }
 
-		public string UniqueID { get; set; }
+		public string UniqueID { get; protected set; }
 
         public virtual bool Visible { get; set; }
 
         public virtual bool Enabled { get; set; }
 
-        public string Name { get; protected set; }
+        public string Name { get; private set; }
 
-        public string Label { get; set; }
+        public string Label { get; set; } = "";
 
         public abstract MenuType Type { get; }
 
@@ -31,18 +31,22 @@ namespace GameMenuExtender.Menus
 
         public bool IsSelected => Type == MenuType.Tab ? Manager.CurrentTab == this : Manager.CurrentTabPage == this;
 
-        public IManifest OwnerMod { get; internal set; }
+        public IManifest SourceMod { get; internal set; }
 
 		internal static int NextID;
 
-		public GameMenuElement()
+		internal GameMenuElement(GameMenuManager manager, string name)
 		{
 			ID = ++NextID;
+            Manager = manager;
+            Name = name;
+            Visible = true;
+            Enabled = true;
 		}
 
 		public static string GenerateUniqueID(GameMenuElement element)
 		{
-			string ownerName = element.OwnerMod?.Name ?? "StardewValley";
+			string ownerName = element.SourceMod?.Name ?? "StardewValley";
 
 			switch (element.Type)
 			{
@@ -62,10 +66,9 @@ namespace GameMenuExtender.Menus
 				return $"Tab_{tabName}::{ownerName}";
 		}
 
-
-		internal void AssignUniqueID()
-		{
-			UniqueID = GenerateUniqueID(this);
-		}
+        public bool NameEquals(string name)
+        {
+            return Name.Equals(name, StringComparison.InvariantCultureIgnoreCase);
+        }
 	}
 }

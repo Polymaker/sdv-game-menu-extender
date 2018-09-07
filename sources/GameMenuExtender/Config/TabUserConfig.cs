@@ -6,21 +6,19 @@ using System.Threading.Tasks;
 
 namespace GameMenuExtender.Config
 {
-	public class TabPageUserConfig
-	{
+    public class TabUserConfig
+    {
         /// <summary>
-        /// Mod's UniqueName or StardewValley for vanilla
+        /// Mod's UniqueName
         /// </summary>
         public string Source { get; set; }
 
         public string TabName { get; set; }
 
-        public string PageName { get; set; }
+        public bool? OverrideVisibillity { get; set; }
 
-		public bool? OverrideVisibillity { get; set; }
+        public string OverrideLabel { get; set; }
 
-		public string OverrideLabel { get; set; }
-
-		public int? DisplayIndex { get; set; }
-	}
+        public int? DisplayIndex { get; set; }
+    }
 }

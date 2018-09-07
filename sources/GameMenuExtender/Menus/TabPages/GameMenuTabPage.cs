@@ -24,17 +24,11 @@ namespace GameMenuExtender.Menus
 
         public int VisibleIndex => Visible ? Tab.TabPages.Where(t => t.Visible).ToList().IndexOf(this) : -1;
 
-        internal GameMenuTabPage(GameMenuTab tab)
+        internal GameMenuTabPage(GameMenuTab tab, string name) : base(tab.Manager, name)
         {
             Tab = tab;
-			Tab.AddTabPage(this);
-            //if (!tab.TabPages.Contains(this))
-            //    tab..Add(this);
-        }
-
-        internal GameMenuTabPage()
-        {
-
+            Tab.AddTabPage(this);
+            UniqueID = $"{Tab.UniqueID}:{Name}";
         }
 		
 		public static IClickableMenu CreatePageInstance(Type pageType, CreateMenuPageParams ctorParams)
@@ -71,5 +65,10 @@ namespace GameMenuExtender.Menus
 
 			return null;
 		}
+
+        internal virtual void InstanciatePageWindow()
+        {
+
+        }
     }
 }

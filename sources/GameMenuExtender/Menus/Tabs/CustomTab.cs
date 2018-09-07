@@ -1,4 +1,5 @@
-﻿using StardewModdingAPI;
+﻿using GameMenuExtender.Data;
+using StardewModdingAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,9 +14,13 @@ namespace GameMenuExtender.Menus
 
 		public int DisplayIndex { get; set; }
 
-        public CustomTab(string name)
+        public bool DrawText { get; set; }
+
+        public Icon TabIcon { get; set; }
+
+        internal CustomTab(GameMenuManager manager, IManifest mod, string name, string label) : base(manager, name)
         {
-            Name = name;
+            Label = label;
         }
     }
 }

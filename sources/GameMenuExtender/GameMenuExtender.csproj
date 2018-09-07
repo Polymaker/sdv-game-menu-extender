@@ -60,15 +60,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="API\GameMenuExtenderAPI.cs" />
+    <Compile Include="API\IGameMenuExtenderAPI.cs" />
+    <Compile Include="Config\ConfigManager.cs" />
+    <Compile Include="Config\GameMenuConfig.cs" />
     <Compile Include="Config\TabPageUserConfig.cs" />
+    <Compile Include="Config\TabUserConfig.cs" />
     <Compile Include="Data\Icon.cs" />
-    <Compile Include="GameMenuExtenderApi.cs" />
     <Compile Include="GameMenuExtenderMod.cs" />
     <Compile Include="Menus\GameMenuPageExtender.cs" />
     <Compile Include="Menus\GameMenuTabs.cs" />
     <Compile Include="Helpers\GraphicClip.cs" />
     <Compile Include="Helpers\ModHelper.cs" />
-    <Compile Include="IGameMenuExtenderApi.cs" />
     <Compile Include="MenuPageEntry.cs" />
     <Compile Include="Menus\TabPages\CreateMenuPageParams.cs" />
     <Compile Include="Menus\TabPages\CustomTabPage.cs" />
@@ -90,9 +93,7 @@
   <ItemGroup>
     <Analyzer Include="..\packages\Pathoschild.Stardew.ModBuildConfig.2.1.0\analyzers\dotnet\cs\StardewModdingAPI.ModBuildConfig.Analyzer.dll" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="API\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Pathoschild.Stardew.ModBuildConfig.2.1.0\build\Pathoschild.Stardew.ModBuildConfig.targets" Condition="Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.2.1.0\build\Pathoschild.Stardew.ModBuildConfig.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

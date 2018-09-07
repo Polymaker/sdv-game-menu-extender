@@ -13,20 +13,24 @@ namespace GameMenuExtender.Menus
 
 		public int TabIndex { get; protected set; }
 
-		public override bool Enabled { get => true; set => throw new NotSupportedException(); }
+		public override bool Enabled { get => true; }
 
-        public override bool Visible { get => true; set => throw new NotSupportedException(); }
+        public override bool Visible { get => true; }
 
         public GameMenuTabs TabName => (GameMenuTabs)TabIndex;
 
         public VanillaTabPage VanillaPage => TabPages.OfType<VanillaTabPage>().FirstOrDefault();
 
-		public VanillaTab(int index, ClickableComponent tab)// : base(index)
+        internal GameMenuPageExtender PageExtender { get; private set; }
+
+        internal VanillaTab(GameMenuManager manager, int index, ClickableComponent tab) : base(manager, tab.name)
         {
 			TabIndex = index;
             TabButton = tab;
-            Name = tab.name;
-		}
+            Label = tab.label;
+            UniqueID = $"StardewValley:{tab.name}";
+            PageExtender = new GameMenuPageExtender(this);
+        }
 
 		internal void RemoveAllCustomPages()
 		{
@@ -35,10 +39,14 @@ namespace GameMenuExtender.Menus
 
 		internal void InitializeLayout()
 		{
-			var curPage = CurrentTabPage.PageWindow;
-			PageExtender.initialize(curPage.xPositionOnScreen, curPage.yPositionOnScreen,
-				curPage.width, curPage.height, curPage.upperRightCloseButton != null);
-			PageExtender.BuildTabButtons();
+			var curPage = Manager.CurrentTabPage.PageWindow;
+            if (curPage != null)
+            {
+                PageExtender.initialize(curPage.xPositionOnScreen, curPage.yPositionOnScreen,
+                                curPage.width, curPage.height, curPage.upperRightCloseButton != null);
+
+                PageExtender.RebuildTabPagesButtons(this);
+            }
 		}
 	}
 }

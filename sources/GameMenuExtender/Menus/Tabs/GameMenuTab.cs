@@ -13,8 +13,6 @@ namespace GameMenuExtender.Menus
 
         public override MenuType Type => MenuType.Tab;
 
-        //public int TabIndex { get; protected set; }
-
 		public ClickableComponent TabButton { get; internal set; }
 
         MenuPageTabsLocation PageTabsLocation { get; set; }
@@ -28,15 +26,12 @@ namespace GameMenuExtender.Menus
 
 		internal int CurrentTabPageIndex;
 
-        public GameMenuTabPage CurrentTabPage => (CurrentTabPageIndex >= 0 && CurrentTabPageIndex < TabPages.Count) ? TabPages[CurrentTabPageIndex] : null;//TabPages.Where(p=>p.Visible).ToList().el
+        public GameMenuTabPage CurrentTabPage => (CurrentTabPageIndex >= 0 && CurrentTabPageIndex < TabPages.Count) ? TabPages[CurrentTabPageIndex] : null;
 
-        internal GameMenuPageExtender PageExtender { get; private set; }
-
-        internal GameMenuTab(/*int index*/)
+        internal GameMenuTab(GameMenuManager manager, string name) : base(manager, name)
         {
-            //TabIndex = index;
             _TabPages = new List<GameMenuTabPage>();
-            PageExtender = new GameMenuPageExtender(this);
+            UniqueID = name;
         }
 
         public void AddTabPage(GameMenuTabPage page)
@@ -62,12 +57,17 @@ namespace GameMenuExtender.Menus
 
         public void SelectTabPage(GameMenuTabPage page)
         {
-			CurrentTabPageIndex = TabPages.IndexOf(page);
+            SelectTabPage(TabPages.IndexOf(page));
         }
 
 		public void SelectTabPage(int index)
 		{
 			CurrentTabPageIndex = index;
-		}
+
+            if (CurrentTabPage != null && CurrentTabPage.PageWindow != null)
+            {
+                Manager.RealCurrentTab.PageExtender.Initialize(CurrentTabPage.PageWindow);
+            }
+        }
 	}
 }

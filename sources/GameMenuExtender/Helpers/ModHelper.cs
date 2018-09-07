@@ -71,7 +71,10 @@ namespace GameMenuExtender
 
 		public static IManifest GetModByType(this IModRegistry registryHelper, Type type)
 		{
-			var registry = RegistryField.GetValue(registryHelper);
+            if (type == null)
+                return null;
+
+            var registry = RegistryField.GetValue(registryHelper);
 			var modDictionary = ModMetadataDictionaryField.GetValue(registry);
 			if (IsModAssemblyExist(modDictionary, type.Assembly.FullName))
 			{
