@@ -22,7 +22,7 @@ namespace CustomMenuTest
 
             menuAPI.RegisterTabPageExtension("Social", "MyPage", "My Page", typeof(MyCustomMenuPage));
             menuAPI.RegisterCustomTabPage("MyTab","I'm the best", typeof(MyCustomMenuPage));
-            menuAPI.RegisterTabPageExtension($"{ModManifest.Name}.MyTab", "MyPage2", "My Page 2", typeof(MyCustomMenuPage));
+            menuAPI.RegisterTabPageExtension($"{ModManifest.UniqueID}:MyTab", "MyPage2", "My Page 2", typeof(MyCustomMenuPage));
             //menuAPI.RegisterGameMenuTab("MyTab", typeof(MyCustomMenuPage));
         }
 	}
@@ -37,15 +37,15 @@ namespace CustomMenuTest
         /// <param name="pageMenuClass">The class of the page menu IClickableMenu.</param>
         void RegisterCustomTabPage(string tabName, string label, Type pageMenuClass);
 
-        /// <summary>
-        /// Registers an additional page for an existing tab. It is possible to extend both custom and vanilla tabs.
-        /// <para>The standard (vanilla) tab names are: Inventory, Skills, Social, Map, Crafting, Collections, Options, Exit</para>
-        /// <para>To extend a custom tab, use the following format: ModName.TabName</para>
-        /// </summary>
-        /// <param name="tabName">The tab's name.</param>
-        /// <param name="pageName">The page's identifier.</param>
-        /// <param name="pageLabel">The page label.</param>
-        /// <param name="pageMenuClass">A type desce</param>
-        void RegisterTabPageExtension(string tabName, string pageName, string pageLabel, Type pageMenuClass);
+		/// <summary>
+		/// Registers an additional page for an existing tab. It is possible to extend both custom and vanilla tabs.
+		/// <para>The standard (vanilla) tab names are: Inventory, Skills, Social, Map, Crafting, Collections, Options, Exit</para>
+		/// <para>To extend a custom tab, use the following format: ModUniqueID.TabName</para>
+		/// </summary>
+		/// <param name="tabName">The tab's name.</param>
+		/// <param name="pageName">The page's identifier.</param>
+		/// <param name="pageLabel">The page label.</param>
+		/// <param name="pageMenuClass">A type desce</param>
+		void RegisterTabPageExtension(string tabName, string pageName, string pageLabel, Type pageMenuClass);
     }
 }

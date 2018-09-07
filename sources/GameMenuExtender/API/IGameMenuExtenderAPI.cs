@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StardewValley.Menus;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,12 +20,18 @@ namespace GameMenuExtender.API
         /// <summary>
         /// Registers an additional page for an existing tab. It is possible to extend both custom and vanilla tabs.
         /// <para>The standard (vanilla) tab names are: Inventory, Skills, Social, Map, Crafting, Collections, Options, Exit</para>
-        /// <para>To extend a custom tab, use the following format: ModName.TabName</para>
+        /// <para>To extend a custom tab, use the following format: ModUniqueID.TabName</para>
         /// </summary>
         /// <param name="tabName">The tab's name.</param>
         /// <param name="pageName">The page's identifier.</param>
         /// <param name="pageLabel">The page label.</param>
         /// <param name="pageMenuClass">A type desce</param>
         void RegisterTabPageExtension(string tabName, string pageName, string pageLabel, Type pageMenuClass);
-    }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <returns></returns>
+		IClickableMenu GetCurrentTabPage();
+	}
 }

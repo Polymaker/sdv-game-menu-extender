@@ -19,12 +19,14 @@ namespace GameMenuExtender
         static FieldInfo ModMetadataDictionaryField;
 		static MethodInfo ContainsKeyMethod;
 		static PropertyInfo ItemProperty;
+		static MethodInfo GetModMethod;
 
 		static ModHelper()
 		{
 			var modRegistryHelperType = typeof(IModRegistry).Assembly.GetType("StardewModdingAPI.Framework.ModHelpers.ModRegistryHelper");
 			RegistryField = modRegistryHelperType.GetField("Registry", BindingFlags.Instance | BindingFlags.NonPublic);
 			ModRegistryType = RegistryField.FieldType;
+			GetModMethod = ModRegistryType.GetMethod("Get");
 			IModMetadataType = typeof(IModRegistry).Assembly.GetType("StardewModdingAPI.Framework.IModMetadata");
 			IModMetadataManifestProperty = IModMetadataType.GetProperty("Manifest");
             IModMetadataModProperty = IModMetadataType.GetProperty("Mod");
@@ -33,8 +35,6 @@ namespace GameMenuExtender
 			ItemProperty = modMetadataDictionaryType.GetProperty("Item");
 			ModMetadataDictionaryField = ModRegistryType.GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)
 				.FirstOrDefault(f => f.FieldType == modMetadataDictionaryType);
-
-
 		}
 
 		public static IManifest GetCallingMod(this IModRegistry registryHelper)
@@ -90,10 +90,14 @@ namespace GameMenuExtender
 
         public static IMod GetMod(this IModRegistry registryHelper, string uniqueID)
         {
-
-            return null;
+			var registry = RegistryField.GetValue(registryHelper);
+			var modInfo = GetModMethod.Invoke(registry, new object[] { uniqueID });
+			if(modInfo != null)
+			{
+				return IModMetadataModProperty.GetValue(modInfo) as IMod;
+			}
+			return null;
         }
-
 
         private static bool IsModAssemblyExist(object dict, string assemblyName)
 		{

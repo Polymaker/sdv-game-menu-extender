@@ -21,20 +21,33 @@ namespace GameMenuExtender
             ApiInstance = new GameMenuExtenderAPI(this);
             MenuEvents.MenuChanged += MenuEvents_MenuChanged;
             SaveEvents.AfterLoad += SaveEvents_AfterLoad;
+			GameEvents.FirstUpdateTick += GameEvents_FirstUpdateTick;
         }
 
-        private void SaveEvents_AfterLoad(object sender, System.EventArgs e)
+		private void GameEvents_FirstUpdateTick(object sender, EventArgs e)
+		{
+			GameEvents.FirstUpdateTick -= GameEvents_FirstUpdateTick;
+			var otherMod = Helper.ModRegistry.GetMod("Polymaker.CustomMenuTest");
+		}
+
+		private void SaveEvents_AfterLoad(object sender, System.EventArgs e)
         {
             if (!MenuManager.HasInitialized)
             {
                 MenuManager.InitializeVanillaMenus();
-                ApiInstance.Foobar();
+                ApiInstance.PerformRegistration();
             }
         }
 
         private void MenuEvents_MenuChanged(object sender, EventArgsClickableMenuChanged e)
         {
-            if (e.NewMenu is GameMenu && MenuManager != null)
+			if (!MenuManager.HasInitialized)
+			{
+				MenuManager.InitializeVanillaMenus();
+				ApiInstance.PerformRegistration();
+			}
+
+			if (e.NewMenu is GameMenu)
             {
                 MenuManager.SetCurrentMenu((GameMenu)e.NewMenu);
                 GameEvents.FourthUpdateTick += OnGameMenuShown;

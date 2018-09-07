@@ -28,30 +28,37 @@ namespace GameMenuExtender.Menus
         {
             Tab = tab;
             Tab.AddTabPage(this);
-            UniqueID = $"{Tab.UniqueID}:{Name}";
+            UniqueID = $"{Tab.UniqueID}::{Name}";
         }
+
+		internal CreateMenuPageParams GetMenuPageParams()
+		{
+			if (PageWindow != null)
+				return new CreateMenuPageParams {
+					x = PageWindow.xPositionOnScreen,
+					y = PageWindow.yPositionOnScreen,
+					width = PageWindow.width,
+					height = PageWindow.height,
+					upperRightCloseButton = (PageWindow.upperRightCloseButton != null)
+				};
+			return default(CreateMenuPageParams);
+		}
 		
 		public static IClickableMenu CreatePageInstance(Type pageType, CreateMenuPageParams ctorParams)
 		{
-			var ctors = pageType.GetConstructors();
-			var getParamTypes = (Func<ConstructorInfo, Type[]>)(c =>
-			{
-				return c.GetParameters().Select(p => p.ParameterType).ToArray();
-			});
-
 			try
 			{
-				if (ctors.Any(c => getParamTypes(c) == new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(bool) }))
+				if (pageType.GetConstructor(new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(bool) }) != null)
 				{
 					return (IClickableMenu)Activator.CreateInstance(pageType,
 						new object[] { ctorParams.x, ctorParams.y, ctorParams.width, ctorParams.height, ctorParams.upperRightCloseButton });
 				}
-				else if (ctors.Any(c => getParamTypes(c) == new Type[] { typeof(int), typeof(int), typeof(int), typeof(int) }))
+				else if (pageType.GetConstructor(new Type[] { typeof(int), typeof(int), typeof(int), typeof(int) }) != null)
 				{
 					return (IClickableMenu)Activator.CreateInstance(pageType,
 						new object[] { ctorParams.x, ctorParams.y, ctorParams.width, ctorParams.height });
 				}
-				else if (ctors.Any(c => getParamTypes(c).Length == 0))
+				else if (pageType.GetConstructor(new Type[0]) != null)
 				{
 					var newPage = (IClickableMenu)Activator.CreateInstance(pageType);
 					newPage.initialize(ctorParams.x, ctorParams.y, ctorParams.width, ctorParams.height, ctorParams.upperRightCloseButton);
@@ -60,7 +67,7 @@ namespace GameMenuExtender.Menus
 			}
 			catch /*(Exception ex)*/
 			{
-
+				
 			}
 
 			return null;

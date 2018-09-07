@@ -28,7 +28,7 @@ namespace GameMenuExtender.Menus
 			TabIndex = index;
             TabButton = tab;
             Label = tab.label;
-            UniqueID = $"StardewValley:{tab.name}";
+            UniqueID = $"StardewValley::{tab.name}";
             PageExtender = new GameMenuPageExtender(this);
         }
 
@@ -39,14 +39,44 @@ namespace GameMenuExtender.Menus
 
 		internal void InitializeLayout()
 		{
-			var curPage = Manager.CurrentTabPage.PageWindow;
-            if (curPage != null)
-            {
-                PageExtender.initialize(curPage.xPositionOnScreen, curPage.yPositionOnScreen,
-                                curPage.width, curPage.height, curPage.upperRightCloseButton != null);
+			if(CurrentTabPage != null && CurrentTabPage.PageWindow != null)
+			{
+				PageExtender.Initialize(CurrentTabPage.PageWindow);
+				PageExtender.RebuildTabPagesButtons(this);
+			}
+		}
 
-                PageExtender.RebuildTabPagesButtons(this);
-            }
+		internal void RebuildLayoutForCurrentTab()
+		{
+			if (Manager.CurrentTab != null && Manager.CurrentTabPage.PageWindow != null)
+			{
+				PageExtender.Initialize(Manager.CurrentTabPage.PageWindow);
+				PageExtender.RebuildTabPagesButtons(Manager.CurrentTab);
+			}
+		}
+
+		internal static Type GetDefaultTabPageType(GameMenuTabs tab)
+		{
+			switch (tab)
+			{
+				case GameMenuTabs.Inventory:
+					return typeof(InventoryPage);
+				case GameMenuTabs.Skills:
+					return typeof(SkillsPage);
+				case GameMenuTabs.Social:
+					return typeof(SocialPage);
+				case GameMenuTabs.Map:
+					return typeof(MapPage);
+				case GameMenuTabs.Crafting:
+					return typeof(CraftingPage);
+				case GameMenuTabs.Collections:
+					return typeof(CollectionsPage);
+				case GameMenuTabs.Options:
+					return typeof(OptionsPage);
+				case GameMenuTabs.Exit:
+					return typeof(ExitPage);
+			}
+			return null;
 		}
 	}
 }

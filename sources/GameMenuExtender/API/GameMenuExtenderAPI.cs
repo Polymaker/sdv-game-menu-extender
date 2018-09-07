@@ -27,15 +27,16 @@ namespace GameMenuExtender.API
             public string PageName;
             public string Label;
             public Type PageMenuClass;
-        }
+			//public IManifest DependsOn;
+		}
 
-        public GameMenuExtenderAPI(GameMenuExtenderMod mod)
+        internal GameMenuExtenderAPI(GameMenuExtenderMod mod)
         {
             Mod = mod;
             RegisterQueue = new Queue<CustomMenuEntry>();
         }
 
-        internal void Foobar()
+        internal void PerformRegistration()
         {
             while (RegisterQueue.Count > 0)
             {
@@ -49,6 +50,8 @@ namespace GameMenuExtender.API
 
         public void RegisterCustomTabPage(string tabName, string label, Type pageMenuClass)
         {
+			Monitor.Log($"RegisterCustomTabPage(\"{tabName}\", \"{label}\", typeof({pageMenuClass.FullName}))", LogLevel.Debug);
+
             if (!ValidateParameters(pageMenuClass, out IManifest sourceMod))
                 return;
 
@@ -70,7 +73,9 @@ namespace GameMenuExtender.API
 
         public void RegisterTabPageExtension(string tabName, string pageName, string pageLabel, Type pageMenuClass)
         {
-            if (!ValidateParameters(pageMenuClass, out IManifest sourceMod))
+			Monitor.Log($"RegisterTabPageExtension(\"{tabName}\", \"{pageName}\", \"{pageLabel}\", typeof({pageMenuClass.FullName}))", LogLevel.Debug);
+
+			if (!ValidateParameters(pageMenuClass, out IManifest sourceMod))
                 return;
 
             if (!MenuManager.HasInitialized)
@@ -120,5 +125,10 @@ namespace GameMenuExtender.API
 
             return true;
         }
-    }
+
+		public IClickableMenu GetCurrentTabPage()
+		{
+			return null;
+		}
+	}
 }

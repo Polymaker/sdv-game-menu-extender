@@ -37,6 +37,11 @@ namespace GameMenuExtender.Menus
 				sourePage.width, sourePage.height, sourePage.upperRightCloseButton != null);
 		}
 
+		public void Initialize(CreateMenuPageParams windowParams)
+		{
+			initialize(windowParams.x, windowParams.y, windowParams.width, windowParams.height, windowParams.upperRightCloseButton);
+		}
+
 		internal void RebuildTabPagesButtons(GameMenuTab tab)
 		{
 			int currentPosY = yPositionOnScreen + 80;
@@ -449,7 +454,7 @@ namespace GameMenuExtender.Menus
 			{
 				if (tabPage.Visible && tabPage.TabPageButton != null && tabPage.TabPageButton.containsPoint(x, y))
 				{
-					MenuTab.SelectTabPage(tabPage);
+					Manager.CurrentTab.SelectTabPage(tabPage);
 					Game1.playSound("smallSelect");
 					return true;
 				}
