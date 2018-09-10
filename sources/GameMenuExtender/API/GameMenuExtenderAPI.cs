@@ -17,9 +17,9 @@ namespace GameMenuExtender.API
         private IMonitor Monitor => Mod.Monitor;
         private GameMenuManager MenuManager => Mod.MenuManager;
 
-        private Queue<CustomMenuEntry> RegisterQueue;
+        private List<CustomMenuEntry> RegisterQueue;
 
-        private struct CustomMenuEntry
+        private class CustomMenuEntry
         {
             public MenuType Type;
             public IManifest Source;
@@ -27,25 +27,31 @@ namespace GameMenuExtender.API
             public string PageName;
             public string Label;
             public Type PageMenuClass;
-			//public IManifest DependsOn;
+			public string DependsOn;
 		}
 
         internal GameMenuExtenderAPI(GameMenuExtenderMod mod)
         {
             Mod = mod;
-            RegisterQueue = new Queue<CustomMenuEntry>();
+            RegisterQueue = new List<CustomMenuEntry>();
         }
 
         internal void PerformRegistration()
         {
-            while (RegisterQueue.Count > 0)
+			RegisterQueue = RegisterQueue
+				.OrderBy(m => m.Type == MenuType.TabPage)
+				.ThenBy(m => !string.IsNullOrEmpty(m.DependsOn)).ToList();
+
+			while (RegisterQueue.Count > 0)
             {
-                var entry = RegisterQueue.Dequeue();
-                if (entry.Type == MenuType.Tab)
+				var entry = RegisterQueue[0];
+				RegisterQueue.RemoveAt(0);
+
+				if (entry.Type == MenuType.Tab)
                     MenuManager.RegisterCustomTabPage(entry.Source, entry.TabName, entry.Label, entry.PageMenuClass);
                 else
                     MenuManager.RegisterTabPageExtension(entry.Source, entry.TabName, entry.PageName, entry.Label, entry.PageMenuClass);
-            }
+			}
         }
 
         public void RegisterCustomTabPage(string tabName, string label, Type pageMenuClass)
@@ -57,7 +63,7 @@ namespace GameMenuExtender.API
 
             if (!MenuManager.HasInitialized)
             {
-                RegisterQueue.Enqueue(new CustomMenuEntry
+                RegisterQueue.Add(new CustomMenuEntry
                 {
                     Type = MenuType.Tab,
                     TabName = tabName,
@@ -80,15 +86,16 @@ namespace GameMenuExtender.API
 
             if (!MenuManager.HasInitialized)
             {
-                RegisterQueue.Enqueue(new CustomMenuEntry
-                {
-                    Type = MenuType.TabPage,
-                    TabName = tabName,
-                    PageName = pageName,
-                    Label = pageLabel,
-                    PageMenuClass = pageMenuClass,
-                    Source = sourceMod
-                });
+				RegisterQueue.Add(new CustomMenuEntry
+				{
+					Type = MenuType.TabPage,
+					TabName = tabName,
+					PageName = pageName,
+					Label = pageLabel,
+					PageMenuClass = pageMenuClass,
+					Source = sourceMod,
+					DependsOn = tabName.Contains(':') ? tabName.Split(':')[0] : string.Empty
+				});
                 return;
             }
 
@@ -128,7 +135,7 @@ namespace GameMenuExtender.API
 
 		public IClickableMenu GetCurrentTabPage()
 		{
-			return null;
+			return MenuManager.CurrentTabPage?.PageWindow;
 		}
 	}
 }

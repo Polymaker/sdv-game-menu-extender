@@ -17,6 +17,8 @@ namespace GameMenuExtender.Menus
 
         public override bool Visible { get => true; }
 
+		public bool IsTabButtonOffseted { get; private set; }
+
         public GameMenuTabs TabName => (GameMenuTabs)TabIndex;
 
         public VanillaTabPage VanillaPage => TabPages.OfType<VanillaTabPage>().FirstOrDefault();
@@ -32,10 +34,27 @@ namespace GameMenuExtender.Menus
             PageExtender = new GameMenuPageExtender(this);
         }
 
-		internal void RemoveAllCustomPages()
+		internal VanillaTab(GameMenuManager manager, int index, GameMenuTabs tab) : base(manager, tab.ToString().ToLower())
 		{
-			PageList.RemoveAll(p => p.IsCustom);
+			TabIndex = index;
+			//TabButton = tab;
+			//Label = tab.label;
+			UniqueID = $"StardewValley::{tab.ToString().ToLower()}";
+			//PageExtender = new GameMenuPageExtender(this);
 		}
+
+		internal void Initialize(ClickableComponent tab, IClickableMenu page)
+		{
+			TabButton = tab;
+			Label = tab.label;
+			PageExtender = new GameMenuPageExtender(this);
+
+		}
+
+		//internal void RemoveAllCustomPages()
+		//{
+		//	PageList.RemoveAll(p => p.IsCustom);
+		//}
 
 		internal void InitializeLayout()
 		{
@@ -44,6 +63,7 @@ namespace GameMenuExtender.Menus
 				PageExtender.Initialize(CurrentTabPage.PageWindow);
 				PageExtender.RebuildTabPagesButtons(this);
 			}
+			IsTabButtonOffseted = false;
 		}
 
 		internal void RebuildLayoutForCurrentTab()
@@ -52,6 +72,24 @@ namespace GameMenuExtender.Menus
 			{
 				PageExtender.Initialize(Manager.CurrentTabPage.PageWindow);
 				PageExtender.RebuildTabPagesButtons(Manager.CurrentTab);
+			}
+		}
+
+		internal void OverrideSelectedTabOffset()
+		{
+			if(TabButton != null && !IsTabButtonOffseted)
+			{
+				TabButton.bounds.Y -= 8;
+				IsTabButtonOffseted = true;
+			}
+		}
+
+		internal void RemoveTabOffsetOverride()
+		{
+			if (TabButton != null && IsTabButtonOffseted)
+			{
+				TabButton.bounds.Y += 8;
+				IsTabButtonOffseted = false;
 			}
 		}
 

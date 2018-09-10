@@ -39,7 +39,7 @@ namespace GameMenuExtender.Menus
 
 		public void Initialize(CreateMenuPageParams windowParams)
 		{
-			initialize(windowParams.x, windowParams.y, windowParams.width, windowParams.height, windowParams.upperRightCloseButton);
+			initialize(windowParams.X, windowParams.Y, windowParams.Width, windowParams.Height, windowParams.UpperRightCloseButton);
 		}
 
 		internal void RebuildTabPagesButtons(GameMenuTab tab)
@@ -436,11 +436,8 @@ namespace GameMenuExtender.Menus
                     {
                         if ((tab.IsCustom && !tab.IsSelected) || (Manager.CurrentTab.IsCustom && !tab.IsCustom))
                         {
-                            if (tab.IsCustom)
-                                Manager.ChangeTab(tab);
-                            else
-                                Manager.ReturnToVanillaTab();
-                            Game1.playSound("smallSelect");
+							Manager.ChangeTab(tab);
+							Game1.playSound("smallSelect");
                             return true;
                         }
                     }

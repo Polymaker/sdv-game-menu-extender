@@ -66,7 +66,7 @@ namespace GameMenuExtender.Menus
 
             if (CurrentTabPage != null && CurrentTabPage.PageWindow != null)
             {
-                Manager.RealCurrentTab.PageExtender.Initialize(CurrentTabPage.PageWindow);
+                Manager.CurrentTabReal.PageExtender.Initialize(CurrentTabPage.PageWindow);
             }
         }
 	}

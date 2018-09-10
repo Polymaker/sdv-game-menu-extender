@@ -16,40 +16,48 @@ namespace GameMenuExtender.Menus
 {
     internal class GameMenuManager
     {
-        public IModHelper Helper { get; private set; }
-        public IMonitor Monitor { get; private set; }
+		internal GameMenuExtenderMod Mod { get; private set; }
+		public IModHelper Helper => Mod.Helper;
 
-        public bool HasInitialized { get; private set; }
+		public IMonitor Monitor => Mod.Monitor;
 
-        internal GameMenu Menu { get; private set; }
+
+		public bool HasInitialized { get; private set; }
+
+        internal GameMenu ActiveGameMenu { get; private set; }
+
+		#region Tabs & Tab Pages Properties
 
 		public IEnumerable<GameMenuTab> AllTabs => VanillaTabs.Select(t => (GameMenuTab)t).Concat(CustomTabs);
-
-		//public List<GameMenuTabPage> MenuTabPages { get; private set; }
 
 		public List<CustomTab> CustomTabs { get; private set; }
 
 		public List<VanillaTab> VanillaTabs { get; private set; }
 
-		private IEnumerable<CustomTabPage> CustomTabPages => AllTabs.SelectMany(t => t.TabPages).OfType<CustomTabPage>();
+		public IEnumerable<GameMenuTabPage> AllTabPages => AllTabs.SelectMany(t => t.TabPages);
 
-		private CustomTab CurrentTabOverride;
-        private VanillaTab CustomTabHost;
+		public IEnumerable<CustomTabPage> CustomTabPages => AllTabs.SelectMany(t => t.TabPages).OfType<CustomTabPage>();
 
-		public GameMenuTab CurrentTab => (GameMenuTab)CurrentTabOverride ?? RealCurrentTab;
+		public GameMenuTab CurrentTab => IsGameMenuOpen ? ((GameMenuTab)CurrentTabOverride ?? CurrentTabReal) : null;
 
 		public GameMenuTabPage CurrentTabPage => CurrentTab?.CurrentTabPage;
 
-		public VanillaTab RealCurrentTab => VanillaTabs[Menu.currentTab];
+		/// <summary>
+		/// Gets the current vanilla tab that is displayed or that displays the current custom tab.
+		/// </summary>
+		public VanillaTab CurrentTabReal => ActiveGameMenu != null ? VanillaTabs[ActiveGameMenu.currentTab] : null;
 
-        public bool IsGameMenuOpen => StardewValley.Game1.activeClickableMenu is GameMenu;
+		#endregion
+
+		public bool IsGameMenuOpen => StardewValley.Game1.activeClickableMenu is GameMenu;
+
+		public bool IsGameMenuExtended { get; private set; }
 
         internal CreateMenuPageParams GameWindowBounds;
 
-        internal GameMenuManager(IMod mod)
+        internal GameMenuManager(GameMenuExtenderMod mod)
         {
-            Helper = mod.Helper;
-            Monitor = mod.Monitor;
+			Mod = mod;
 			VanillaTabs = new List<VanillaTab>();
 			CustomTabs = new List<CustomTab>();
 			MenuEvents.MenuChanged += MenuEvents_MenuChanged;
@@ -61,52 +69,79 @@ namespace GameMenuExtender.Menus
 		private void MenuEvents_MenuChanged(object sender, EventArgsClickableMenuChanged e)
 		{
 			if (e.NewMenu is GameMenu)
-				GameEvents.FourthUpdateTick += MenuEvents_AfterMenuChanged;
+			{
+				ActiveGameMenu = (GameMenu)e.NewMenu;
+				GameEvents.SecondUpdateTick += MenuEvents_AfterMenuChanged;
+			}
 		}
 
 		private void MenuEvents_AfterMenuChanged(object sender, EventArgs e)
 		{
-			GameEvents.FourthUpdateTick -= MenuEvents_AfterMenuChanged;
+			GameEvents.SecondUpdateTick -= MenuEvents_AfterMenuChanged;
+			GameEvents.UpdateTick += GameEvents_UpdateTick;
 			OnGameMenuOpened();
 		}
 
 		private void MenuEvents_MenuClosed(object sender, EventArgsClickableMenuClosed e)
 		{
 			if (e.PriorMenu is GameMenu)
+			{
+				GameEvents.UpdateTick -= GameEvents_UpdateTick;
 				OnGameMenuClosed();
+				ActiveGameMenu = null;
+			}
 		}
 
-		private void WatchForVanillaTabChange(object sender, EventArgs e)
+		private void GameEvents_UpdateTick(object sender, EventArgs e)
 		{
-			if(!IsGameMenuOpen)
+			if (!IsGameMenuOpen)
 			{
-				OnGameMenuClosed();
+				GameEvents.UpdateTick -= GameEvents_UpdateTick;
 				return;
 			}
-			if (CustomTabHost == null)
-			{
-				StopWatchingForVanillaTabChange();
-				return;
-			}
-
-			if (Menu.currentTab != CustomTabHost.TabIndex)
-			{
-				ReturnToVanillaTab();
-			}
+			if (IsGameMenuExtended)
+				OnGameMenuUpdate();
 		}
 
 		#endregion
+
+		public void Initialize()
+		{
+			if (!HasInitialized)
+			{
+				InitializeVanillaMenus();
+				Mod.ApiInstance.PerformRegistration();
+				HasInitialized = true;
+			}
+		}
 
 		#region Game Menu Tracking
 
 		private void OnGameMenuOpened()
 		{
-
+			if (!HasInitialized)
+				Initialize();
+			ExtendGameMenu();
 		}
 
 		private void OnGameMenuClosed()
 		{
+			CurrentTabOverride = null;
+			CustomTabHost = null;
+			CurrentTabIndex = 0;
+			IsGameMenuExtended = false;
+		}
 
+		private void OnGameMenuUpdate()
+		{
+			if (ActiveGameMenu != null && ActiveGameMenu.currentTab != CurrentTabIndex && !ChangingTab)
+			{
+				if (CurrentTabOverride != null)
+					ReturnToVanillaTab();
+				CurrentTabIndex = ActiveGameMenu.currentTab;
+				CurrentTabReal.SelectFirstPage();
+				CurrentTabReal.InitializeLayout();
+			}
 		}
 
 		#endregion
@@ -128,33 +163,33 @@ namespace GameMenuExtender.Menus
                 {
 					var menuTab = new VanillaTab(this, i, vanillaTabs[i]);
                     var tabPage = new VanillaTabPage(menuTab, vanillaPages[i]);
+					tabPage.CalculateGameMenuOffset(gameMenu);
 					VanillaTabs.Add(menuTab);
 				}
             }
-
-            HasInitialized = true;
         }
 
-		internal void SetCurrentMenu(GameMenu menu)
-		{
-			Menu = menu;
-		}
+		//private CreateMenuPageParams GetGameMenuBounds()
+		//{
+		//	return new CreateMenuPageParams { X = ActiveGameMenu.xPositionOnScreen, Y = ActiveGameMenu.yPositionOnScreen, Width = ActiveGameMenu.width, Height = ActiveGameMenu.height };
+		//}
 
-        internal void ExtendGameMenu()
+		internal void ExtendGameMenu()
         {
-			if (!HasInitialized)
-				InitializeVanillaMenus();
-
 			CurrentTabOverride = null;
-            GameWindowBounds = new CreateMenuPageParams { x = Menu.xPositionOnScreen, y = Menu.yPositionOnScreen, width = Menu.width, height = Menu.height };
+			CustomTabHost = null;
+			CurrentTabIndex = ActiveGameMenu.currentTab;
 
-            var currentTabs = Helper.Reflection.GetField<List<ClickableComponent>>(Menu, "tabs").GetValue();
-            var currentPages = Helper.Reflection.GetField<List<IClickableMenu>>(Menu, "pages").GetValue();
+			GameWindowBounds = new CreateMenuPageParams { X = ActiveGameMenu.xPositionOnScreen, Y = ActiveGameMenu.yPositionOnScreen, Width = ActiveGameMenu.width, Height = ActiveGameMenu.height };
+
+			var currentTabs = Helper.Reflection.GetField<List<ClickableComponent>>(ActiveGameMenu, "tabs").GetValue();
+            var currentPages = Helper.Reflection.GetField<List<IClickableMenu>>(ActiveGameMenu, "pages").GetValue();
             
             for (int i = 0; i < VanillaTabs.Count; i++)
             {
 				var currentTab = VanillaTabs.ElementAt(i);
-                currentTab.TabButton = currentTabs[i];
+
+				currentTab.TabButton = currentTabs[i];
 
                 var currentPage = currentPages[i];
                 var vanillaPageMenuType = VanillaTab.GetDefaultTabPageType(currentTab.TabName);
@@ -176,88 +211,93 @@ namespace GameMenuExtender.Menus
                         {
 							Monitor.Log($"The tab page '{currentTab.Name}' is overrided by another mod ({customPageMod.Name})");
                             customTabPage = RegisterTabPageExtension(customPageMod, currentTab.Name, currentTab.Name, customPageMod.Name, currentPage.GetType(), false);
-                        }
+							customTabPage.CalculateGameMenuOffset(ActiveGameMenu);
+						}
 
                         if (customTabPage != null)
                             customTabPage.PageWindow = currentPage;
 					}
+					else
+					{
+						Monitor.Log($"The tab page '{currentTab.Name}' seems to be overrided by another mod but could not be identified.");
+					}
                 }
+
                 currentPages[i] = currentTab.PageExtender;
             }
 
-            foreach (var customPage in CustomTabPages)
+            foreach (var tabPage in AllTabPages)
             {
-                if (customPage.PageWindow == null)
-                    customPage.InstanciatePageWindow();
-            }
+                if (tabPage.IsCustom && tabPage.PageWindow == null)
+				{
+					tabPage.InstanciatePageWindow();
+					tabPage.CalculateGameMenuOffset(ActiveGameMenu);
+				}
 
-            UpdateCustomTabs();
+				tabPage.InitializeWindow();
+			}
+
+            RebuildCustomTabButtons();
 
             foreach (var tab in AllTabs)
+			{
 				tab.SelectFirstPage();
+				if (tab.IsVanilla)
+					(tab as VanillaTab).InitializeLayout();
+			}
 
-			foreach(var realTab in VanillaTabs)
-				realTab.InitializeLayout();
+			IsGameMenuExtended = true;
 		}
-
-        
-
-        private bool WatchTimerAttached;
-
-        private void StartWatchingForVanillaTabChange()
-        {
-            if (!WatchTimerAttached)
-            {
-                GameEvents.UpdateTick += WatchForVanillaTabChange;
-                WatchTimerAttached = true;
-            }
-        }
-
-        private void StopWatchingForVanillaTabChange()
-        {
-            if (WatchTimerAttached)
-            {
-                GameEvents.UpdateTick -= WatchForVanillaTabChange;
-                WatchTimerAttached = false;
-            }
-        }
 
 		#region Tab Handling
 
+		private CustomTab CurrentTabOverride;
+		private VanillaTab CustomTabHost;
+		private int CurrentTabIndex;
+		private bool ChangingTab = false;
+
 		public void ChangeTab(GameMenuTab newTab)
 		{
-			if (newTab == CurrentTab)
+			if (newTab == CurrentTab || newTab == null)
 				return;
+
+			ChangingTab = true;
 
 			if (newTab.IsVanilla)
 			{
-				CurrentTabOverride = null;
-				Menu.changeTab((newTab as VanillaTab).TabIndex);
+				ReturnToVanillaTab();
+				var vanillaTab = (VanillaTab)newTab;
+				if (ActiveGameMenu.currentTab != vanillaTab.TabIndex)
+					ActiveGameMenu.changeTab(vanillaTab.TabIndex);
 			}
 			else
 			{
-				RealCurrentTab.TabButton.bounds.Y -= 8;
 				CurrentTabOverride = (CustomTab)newTab;
-				CustomTabHost = RealCurrentTab;
-				StartWatchingForVanillaTabChange();
+				CustomTabHost = CurrentTabReal;
+				CustomTabHost.OverrideSelectedTabOffset();
 			}
 
-			RealCurrentTab.RebuildLayoutForCurrentTab();
+			CurrentTabIndex = CurrentTabReal.TabIndex;
+
+			newTab.SelectFirstPage();
+			CurrentTabReal.RebuildLayoutForCurrentTab();
+			ChangingTab = false;
 		}
 
 		internal void ReturnToVanillaTab()
 		{
-			CurrentTabOverride = null;
-			CustomTabHost.TabButton.bounds.Y += 8;
-			CustomTabHost = null;
-			RealCurrentTab.InitializeLayout();
-			StopWatchingForVanillaTabChange();
+			if(CurrentTabOverride != null)
+			{
+				CustomTabHost.RemoveTabOffsetOverride();
+				CustomTabHost = null;
+				CurrentTabOverride = null;
+				CurrentTabReal.InitializeLayout();
+			}
 		}
 
 		#endregion
 
-
-		private void UpdateCustomTabs()
+		private void RebuildCustomTabButtons()
         {
             var lastTabButton = VanillaTabs.Last().TabButton;
             int currentX = lastTabButton.bounds.Right;
@@ -310,30 +350,6 @@ namespace GameMenuExtender.Menus
 
             //b.End();
             //b.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null);
-        }
-
-        private static Type GetDefaultTabPageType(GameMenuTabs tab)
-        {
-            switch (tab)
-            {
-                case GameMenuTabs.Inventory:
-                    return typeof(InventoryPage);
-                case GameMenuTabs.Skills:
-                    return typeof(SkillsPage);
-                case GameMenuTabs.Social:
-                    return typeof(SocialPage);
-                case GameMenuTabs.Map:
-                    return typeof(MapPage);
-                case GameMenuTabs.Crafting:
-                    return typeof(CraftingPage);
-                case GameMenuTabs.Collections:
-                    return typeof(CollectionsPage);
-                case GameMenuTabs.Options:
-                    return typeof(OptionsPage);
-                case GameMenuTabs.Exit:
-                    return typeof(ExitPage);
-            }
-            return null;
         }
 
         #region API

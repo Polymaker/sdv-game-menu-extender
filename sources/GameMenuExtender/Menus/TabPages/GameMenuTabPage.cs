@@ -24,7 +24,9 @@ namespace GameMenuExtender.Menus
 
         public int VisibleIndex => Visible ? Tab.TabPages.Where(t => t.Visible).ToList().IndexOf(this) : -1;
 
-        internal GameMenuTabPage(GameMenuTab tab, string name) : base(tab.Manager, name)
+		public CreateMenuPageParams GameWindowOffset { get; protected set; }
+
+		internal GameMenuTabPage(GameMenuTab tab, string name) : base(tab.Manager, name)
         {
             Tab = tab;
             Tab.AddTabPage(this);
@@ -35,15 +37,21 @@ namespace GameMenuExtender.Menus
 		{
 			if (PageWindow != null)
 				return new CreateMenuPageParams {
-					x = PageWindow.xPositionOnScreen,
-					y = PageWindow.yPositionOnScreen,
-					width = PageWindow.width,
-					height = PageWindow.height,
-					upperRightCloseButton = (PageWindow.upperRightCloseButton != null)
+					X = PageWindow.xPositionOnScreen,
+					Y = PageWindow.yPositionOnScreen,
+					Width = PageWindow.width,
+					Height = PageWindow.height,
+					UpperRightCloseButton = (PageWindow.upperRightCloseButton != null)
 				};
 			return default(CreateMenuPageParams);
 		}
-		
+
+		internal CreateMenuPageParams GetMenuPageParams(GameMenu menu)
+		{
+			
+			return default(CreateMenuPageParams);
+		}
+
 		public static IClickableMenu CreatePageInstance(Type pageType, CreateMenuPageParams ctorParams)
 		{
 			try
@@ -51,17 +59,17 @@ namespace GameMenuExtender.Menus
 				if (pageType.GetConstructor(new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(bool) }) != null)
 				{
 					return (IClickableMenu)Activator.CreateInstance(pageType,
-						new object[] { ctorParams.x, ctorParams.y, ctorParams.width, ctorParams.height, ctorParams.upperRightCloseButton });
+						new object[] { ctorParams.X, ctorParams.Y, ctorParams.Width, ctorParams.Height, ctorParams.UpperRightCloseButton });
 				}
 				else if (pageType.GetConstructor(new Type[] { typeof(int), typeof(int), typeof(int), typeof(int) }) != null)
 				{
 					return (IClickableMenu)Activator.CreateInstance(pageType,
-						new object[] { ctorParams.x, ctorParams.y, ctorParams.width, ctorParams.height });
+						new object[] { ctorParams.X, ctorParams.Y, ctorParams.Width, ctorParams.Height });
 				}
 				else if (pageType.GetConstructor(new Type[0]) != null)
 				{
 					var newPage = (IClickableMenu)Activator.CreateInstance(pageType);
-					newPage.initialize(ctorParams.x, ctorParams.y, ctorParams.width, ctorParams.height, ctorParams.upperRightCloseButton);
+					newPage.initialize(ctorParams.X, ctorParams.Y, ctorParams.Width, ctorParams.Height, ctorParams.UpperRightCloseButton);
 					return newPage;
 				}
 			}
@@ -77,5 +85,33 @@ namespace GameMenuExtender.Menus
         {
 
         }
-    }
+
+		internal void CalculateGameMenuOffset(GameMenu menu)
+		{
+			var pageBounds = GetMenuPageParams();
+			if (pageBounds != default(CreateMenuPageParams))
+			{
+				GameWindowOffset = new CreateMenuPageParams
+					(
+					pageBounds.X - menu.xPositionOnScreen,
+					pageBounds.Y - menu.yPositionOnScreen,
+					pageBounds.Width - menu.width,
+					pageBounds.Height - menu.height,
+					pageBounds.UpperRightCloseButton
+					);
+			}
+			else
+				GameWindowOffset = default(CreateMenuPageParams);
+		}
+
+		internal void InitializeWindow()
+		{
+			if(PageWindow != null)
+			{
+				var menuBounds = Manager.GameWindowBounds;
+				var finalBounds = menuBounds + GameWindowOffset;
+				PageWindow.initialize(finalBounds.X, finalBounds.Y, finalBounds.Width, finalBounds.Height, PageWindow.upperRightCloseButton != null);
+			}
+		}
+	}
 }

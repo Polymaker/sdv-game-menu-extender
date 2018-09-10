@@ -20,11 +20,11 @@ namespace GameMenuExtender.Menus
 
             DefaultCtorParams = new CreateMenuPageParams()
             {
-                x = window.xPositionOnScreen,
-                y = window.yPositionOnScreen,
-                width = window.width,
-                height = window.height,
-                upperRightCloseButton = window.upperRightCloseButton != null
+                X = window.xPositionOnScreen,
+                Y = window.yPositionOnScreen,
+                Width = window.width,
+                Height = window.height,
+                UpperRightCloseButton = window.upperRightCloseButton != null
             };
         }
 
