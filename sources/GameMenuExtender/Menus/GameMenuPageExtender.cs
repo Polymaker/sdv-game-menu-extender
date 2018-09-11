@@ -24,7 +24,8 @@ namespace GameMenuExtender.Menus
 
 		private const int TabPaddingX = 32;
 		private const int TabPaddingY = 24;
-        private const int LeftSideStartOffsetY = 20;
+        private const int LeftSideStartOffsetY = 128;
+        private const int LeftSideTabOffsetX = 24;
 
 		public GameMenuPageExtender(GameMenuTab tab)
 		{
@@ -44,7 +45,7 @@ namespace GameMenuExtender.Menus
 
 		internal void RebuildTabPagesButtons(GameMenuTab tab)
 		{
-			int currentPosY = yPositionOnScreen + 80;
+			int currentPosY = yPositionOnScreen + LeftSideStartOffsetY;
             int maxLabelWidth = 0;
 
 			foreach(var tabPage in tab.TabPages)
@@ -53,17 +54,17 @@ namespace GameMenuExtender.Menus
 				{
 					var labelSize = Game1.smallFont.MeasureString(tabPage.Label);
 					int tabWidth = (int)labelSize.X + TabPaddingX;
-					int tabHeight = (int)labelSize.Y + TabPaddingY;
+					int tabHeight = (int)labelSize.Y + 30;
 					if (tabWidth > maxLabelWidth)
 						maxLabelWidth = tabWidth;
-					var tabRect = new Rectangle(xPositionOnScreen - tabWidth + 26, currentPosY + LeftSideStartOffsetY, tabWidth, tabHeight);
-					currentPosY += tabHeight + 10;
+					var tabRect = new Rectangle(xPositionOnScreen - tabWidth + LeftSideTabOffsetX, currentPosY, tabWidth, tabHeight);
+					currentPosY += tabHeight + 8;
 					
 					tabPage.TabPageButton = new ClickableComponent(tabRect, tabPage.UniqueID, tabPage.Label);
 				}
 				else
 				{
-					tabPage.TabPageButton = null;
+                    tabPage.TabPageButton = null;
 				}
 			}
 
@@ -74,11 +75,10 @@ namespace GameMenuExtender.Menus
 					if(tabPage.TabPageButton != null)
 					{
 						tabPage.TabPageButton.bounds.Width = maxLabelWidth;
-						tabPage.TabPageButton.bounds.X = xPositionOnScreen - maxLabelWidth + 26;
+						tabPage.TabPageButton.bounds.X = xPositionOnScreen - maxLabelWidth + LeftSideTabOffsetX;
 					}
 				}
             }
-
         }
 
 		#region IClickableMenu Redirection
@@ -410,18 +410,12 @@ namespace GameMenuExtender.Menus
             using (new GraphicClip(b, clipRect))
             {
                 IClickableMenu.drawTextureBox(b, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
-				buttonBounds.X, buttonBounds.Y, buttonBounds.Width + 30, buttonBounds.Height, buttonColor, 1f, pageTab.IsSelected);
-
-       //         b.DrawString(Game1.smallFont, pageTab.Label,
-       //                 new Vector2(
-       //                     buttonBounds.X + (TabPaddingX / 2),
-							//buttonBounds.Y + (TabPaddingY / 2) + 3),
-       //                 Game1.textColor);
+				    buttonBounds.X, buttonBounds.Y, buttonBounds.Width + 16, buttonBounds.Height, buttonColor, 1f, pageTab.IsSelected);
 
                 Utility.drawTextWithShadow(b, pageTab.Label, Game1.smallFont,
                         new Vector2(
                             buttonBounds.X + (TabPaddingX / 2),
-                            buttonBounds.Y + (TabPaddingY / 2) + 3),
+                            buttonBounds.Y + 18),
                         Game1.textColor);
             }
 		}
@@ -451,9 +445,12 @@ namespace GameMenuExtender.Menus
 			{
 				if (tabPage.Visible && tabPage.TabPageButton != null && tabPage.TabPageButton.containsPoint(x, y))
 				{
-					Manager.CurrentTab.SelectTabPage(tabPage);
-					Game1.playSound("smallSelect");
-					return true;
+                    if (!tabPage.IsSelected)
+                    {
+                        Manager.CurrentTab.SelectTabPage(tabPage);
+                        Game1.playSound("smallSelect");
+                        return true;
+                    }
 				}
 			}
 			return false;

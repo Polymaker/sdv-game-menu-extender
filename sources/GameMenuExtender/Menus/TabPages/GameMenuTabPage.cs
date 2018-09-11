@@ -81,11 +81,6 @@ namespace GameMenuExtender.Menus
 			return null;
 		}
 
-        internal virtual void InstanciatePageWindow()
-        {
-
-        }
-
 		internal void CalculateGameMenuOffset(GameMenu menu)
 		{
 			var pageBounds = GetMenuPageParams();
@@ -104,14 +99,15 @@ namespace GameMenuExtender.Menus
 				GameWindowOffset = default(CreateMenuPageParams);
 		}
 
-		internal void InitializeWindow()
+		internal void InitializeWindow(bool forceRecreate = false)
 		{
-			if(PageWindow != null)
-			{
-				var menuBounds = Manager.GameWindowBounds;
-				var finalBounds = menuBounds + GameWindowOffset;
-				PageWindow.initialize(finalBounds.X, finalBounds.Y, finalBounds.Width, finalBounds.Height, PageWindow.upperRightCloseButton != null);
-			}
-		}
+            var menuBounds = Manager.GameWindowBounds;
+            var finalBounds = menuBounds + GameWindowOffset;
+
+            if (PageWindow != null && !forceRecreate)
+                PageWindow.initialize(finalBounds.X, finalBounds.Y, finalBounds.Width, finalBounds.Height, PageWindow.upperRightCloseButton != null);
+            else
+                PageWindow = CreatePageInstance(PageType, finalBounds);
+        }
 	}
 }

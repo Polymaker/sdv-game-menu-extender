@@ -20,10 +20,5 @@ namespace GameMenuExtender.Menus
 			SourceMod = mod;
             Label = label;
 		}
-
-        internal override void InstanciatePageWindow()
-        {
-            PageWindow = CreatePageInstance(PageType, Manager.GameWindowBounds);
-        }
     }
 }

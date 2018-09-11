@@ -9,6 +9,8 @@ namespace GameMenuExtender.API
 {
     public interface IGameMenuExtenderAPI
     {
+        event EventHandler CurrentTabPageChanged;
+
         /// <summary>
         /// Registers a custom tab in the game menu.
         /// </summary>
@@ -33,5 +35,11 @@ namespace GameMenuExtender.API
 		/// </summary>
 		/// <returns></returns>
 		IClickableMenu GetCurrentTabPage();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        string GetCurrentTabPageName();
 	}
 }

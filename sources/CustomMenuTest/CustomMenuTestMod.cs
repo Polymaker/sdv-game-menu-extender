@@ -1,5 +1,6 @@
 ﻿using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,8 @@ namespace CustomMenuTest
 {
 	public class CustomMenuTestMod : Mod
 	{
-		public override void Entry(IModHelper helper)
+        private IGameMenuExtenderAPI MenuAPI;
+        public override void Entry(IModHelper helper)
 		{
 			GameEvents.FirstUpdateTick += GameEvents_FirstUpdateTick;
 		}
@@ -18,17 +20,28 @@ namespace CustomMenuTest
 		private void GameEvents_FirstUpdateTick(object sender, EventArgs e)
 		{
 			GameEvents.FirstUpdateTick -= GameEvents_FirstUpdateTick;
-			var menuAPI = Helper.ModRegistry.GetApi<IGameMenuExtenderAPI>("Polymaker.GameMenuExtender");
+            MenuAPI = Helper.ModRegistry.GetApi<IGameMenuExtenderAPI>("Polymaker.GameMenuExtender");
 
-            menuAPI.RegisterTabPageExtension("Social", "MyPage", "My Page", typeof(MyCustomMenuPage));
-            menuAPI.RegisterCustomTabPage("MyTab","I'm the best", typeof(MyCustomMenuPage));
-            menuAPI.RegisterTabPageExtension($"{ModManifest.UniqueID}:MyTab", "MyPage2", "My Page 2", typeof(MyCustomMenuPage));
-            //menuAPI.RegisterGameMenuTab("MyTab", typeof(MyCustomMenuPage));
+            MenuAPI.RegisterTabPageExtension("Social", "MyPage", "My Page", typeof(MyCustomMenuPage));
+            MenuAPI.RegisterCustomTabPage("MyTab","I'm the best", typeof(MyCustomMenuPage));
+            MenuAPI.RegisterTabPageExtension($"{ModManifest.UniqueID}:MyTab", "MyPage2", "My Page 2", typeof(MyCustomMenuPage2));
+            //MenuAPI.CurrentTabPageChanged += MenuAPI_CurrentTabPageChanged;
+            //MenuAPI.RegisterGameMenuTab("MyTab", typeof(MyCustomMenuPage));
         }
-	}
+
+        private void MenuAPI_CurrentTabPageChanged(object sender, EventArgs e)
+        {
+            Monitor.Log($"Current Tab Page Changed: {MenuAPI.GetCurrentTabPageName()}");
+        }
+    }
 
     public interface IGameMenuExtenderAPI
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        event EventHandler CurrentTabPageChanged;
+
         /// <summary>
         /// Registers a custom tab in the game menu.
         /// </summary>
@@ -47,5 +60,17 @@ namespace CustomMenuTest
 		/// <param name="pageLabel">The page label.</param>
 		/// <param name="pageMenuClass">A type desce</param>
 		void RegisterTabPageExtension(string tabName, string pageName, string pageLabel, Type pageMenuClass);
+
+        /// <summary>
+		/// 
+		/// </summary>
+		/// <returns></returns>
+		IClickableMenu GetCurrentTabPage();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        string GetCurrentTabPageName();
     }
 }

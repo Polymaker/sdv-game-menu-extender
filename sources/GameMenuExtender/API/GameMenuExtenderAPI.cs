@@ -19,6 +19,18 @@ namespace GameMenuExtender.API
 
         private List<CustomMenuEntry> RegisterQueue;
 
+        public event EventHandler CurrentTabPageChanged
+        {
+            add
+            {
+                MenuManager.CurrentTabPageChanged += value;
+            }
+            remove
+            {
+                MenuManager.CurrentTabPageChanged -= value;
+            }
+        }
+
         private class CustomMenuEntry
         {
             public MenuType Type;
@@ -137,5 +149,10 @@ namespace GameMenuExtender.API
 		{
 			return MenuManager.CurrentTabPage?.PageWindow;
 		}
-	}
+
+        public string GetCurrentTabPageName()
+        {
+            return MenuManager.CurrentTabPage?.Name;
+        }
+    }
 }
