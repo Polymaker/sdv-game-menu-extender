@@ -56,7 +56,7 @@ namespace GameMenuExtender
 				if(method.ReflectedType != null)
 				{
 					var assemblyName = method.ReflectedType.Assembly.FullName;
-					if(IsModAssemblyExist(modDictionary, assemblyName))
+					if(ModAssemblyExists(modDictionary, assemblyName))
 					{
 						var modMetadata = ItemProperty.GetValue(modDictionary, new object[] { assemblyName });
 						if (modMetadata != null)
@@ -77,7 +77,7 @@ namespace GameMenuExtender
 
             var registry = RegistryField.GetValue(registryHelper);
 			var modDictionary = ModMetadataDictionaryField.GetValue(registry);
-			if (IsModAssemblyExist(modDictionary, type.Assembly.FullName))
+			if (ModAssemblyExists(modDictionary, type.Assembly.FullName))
 			{
 				var modMetadata = ItemProperty.GetValue(modDictionary, new object[] { type.Assembly.FullName });
 				if (modMetadata != null)
@@ -99,7 +99,7 @@ namespace GameMenuExtender
 			return null;
         }
 
-        private static bool IsModAssemblyExist(object dict, string assemblyName)
+        private static bool ModAssemblyExists(object dict, string assemblyName)
 		{
 			return (bool)ContainsKeyMethod.Invoke(dict, new object[] { assemblyName });
 		}

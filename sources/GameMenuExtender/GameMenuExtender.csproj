@@ -68,6 +68,7 @@
     <Compile Include="Config\TabUserConfig.cs" />
     <Compile Include="Data\Icon.cs" />
     <Compile Include="GameMenuExtenderMod.cs" />
+    <Compile Include="Helpers\GameMenuHelper.cs" />
     <Compile Include="Menus\GameMenuPageExtender.cs" />
     <Compile Include="Menus\GameMenuTabs.cs" />
     <Compile Include="Helpers\GraphicClip.cs" />

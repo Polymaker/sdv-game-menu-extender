@@ -22,7 +22,7 @@ namespace GameMenuExtender.Menus
 
 		public IClickableMenu PageWindow { get; internal set; }
 
-        public int VisibleIndex => Visible ? Tab.TabPages.Where(t => t.Visible).ToList().IndexOf(this) : -1;
+        //public int VisibleIndex => Visible ? Tab.TabPages.Where(t => t.Visible).ToList().IndexOf(this) : -1;
 
 		public CreateMenuPageParams GameWindowOffset { get; protected set; }
 
@@ -43,12 +43,6 @@ namespace GameMenuExtender.Menus
 					Height = PageWindow.height,
 					UpperRightCloseButton = (PageWindow.upperRightCloseButton != null)
 				};
-			return default(CreateMenuPageParams);
-		}
-
-		internal CreateMenuPageParams GetMenuPageParams(GameMenu menu)
-		{
-			
 			return default(CreateMenuPageParams);
 		}
 
@@ -107,7 +101,9 @@ namespace GameMenuExtender.Menus
             if (PageWindow != null && !forceRecreate)
                 PageWindow.initialize(finalBounds.X, finalBounds.Y, finalBounds.Width, finalBounds.Height, PageWindow.upperRightCloseButton != null);
             else
-                PageWindow = CreatePageInstance(PageType, finalBounds);
+			{
+				PageWindow = CreatePageInstance(PageType, IsVanilla ? finalBounds : menuBounds);
+			}
         }
 	}
 }

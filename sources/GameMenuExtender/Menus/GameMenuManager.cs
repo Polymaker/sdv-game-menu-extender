@@ -68,20 +68,44 @@ namespace GameMenuExtender.Menus
 
 		#region Game Menu Events Management
 
+		private bool WaitingForGameMenu;
+		private int SelectedOptionFix = -1;
+
 		private void MenuEvents_MenuChanged(object sender, EventArgsClickableMenuChanged e)
 		{
-			if (e.NewMenu is GameMenu)
+			if (e.NewMenu is GameMenu && !WaitingForGameMenu)
 			{
-				ActiveGameMenu = (GameMenu)e.NewMenu;
+				var currentMenu = (GameMenu)e.NewMenu;
+
+				var optionPage = currentMenu.GetPage<OptionsPage>();
+				if (optionPage != null && optionPage.currentItemIndex > 0)
+					SelectedOptionFix = optionPage.currentItemIndex;
+				else
+					SelectedOptionFix = -1;
+
+				WaitingForGameMenu = true;
 				GameEvents.SecondUpdateTick += MenuEvents_AfterMenuChanged;
 			}
 		}
 
 		private void MenuEvents_AfterMenuChanged(object sender, EventArgs e)
 		{
+			WaitingForGameMenu = false;
 			GameEvents.SecondUpdateTick -= MenuEvents_AfterMenuChanged;
 			GameEvents.UpdateTick += GameEvents_UpdateTick;
-			OnGameMenuOpened();
+
+			if(Game1.activeClickableMenu is GameMenu)
+			{
+				if (ActiveGameMenu != null)
+				{
+					if (ActiveGameMenu == Game1.activeClickableMenu)
+						return;
+					OnGameMenuClosed();
+				}
+
+				ActiveGameMenu = (GameMenu)Game1.activeClickableMenu;
+				OnGameMenuOpened();
+			}
 		}
 
 		private void MenuEvents_MenuClosed(object sender, EventArgsClickableMenuClosed e)
@@ -121,6 +145,7 @@ namespace GameMenuExtender.Menus
 
 		private void OnGameMenuOpened()
 		{
+			Monitor.Log("OnGameMenuOpened");
 			if (!HasInitialized)
 				Initialize();
 			ExtendGameMenu();
@@ -128,6 +153,7 @@ namespace GameMenuExtender.Menus
 
 		private void OnGameMenuClosed()
 		{
+			Monitor.Log("OnGameMenuClosed");
 			CurrentTabOverride = null;
 			CustomTabHost = null;
 			CurrentTabIndex = 0;
@@ -137,7 +163,7 @@ namespace GameMenuExtender.Menus
 
 		private void OnGameMenuUpdate()
 		{
-			if (ActiveGameMenu != null && ActiveGameMenu.currentTab != CurrentTabIndex && !ChangingTab)
+			if (IsGameMenuExtended && ActiveGameMenu.currentTab != CurrentTabIndex && !ChangingTab)
 			{
 				if (CurrentTabOverride != null)
 					ReturnToVanillaTab();
@@ -182,11 +208,19 @@ namespace GameMenuExtender.Menus
 
 			var currentTabs = Helper.Reflection.GetField<List<ClickableComponent>>(ActiveGameMenu, "tabs").GetValue();
             var currentPages = Helper.Reflection.GetField<List<IClickableMenu>>(ActiveGameMenu, "pages").GetValue();
-            
+			bool alreadyExtended = false;
+
             for (int i = 0; i < VanillaTabs.Count; i++)
             {
 				var currentTab = VanillaTabs.ElementAt(i);
                 var currentPage = currentPages[i];
+
+				if(currentPage is GameMenuPageExtender)
+				{
+					alreadyExtended = true;
+					break;
+				}
+
                 currentTab.TabButton = currentTabs[i];
                 
                 var vanillaPageMenuType = VanillaTab.GetDefaultTabPageType(currentTab.TabName);
@@ -224,6 +258,12 @@ namespace GameMenuExtender.Menus
                 currentPages[i] = currentTab.PageExtender;
             }
 
+			if (alreadyExtended)
+			{
+				Monitor.Log("ExtendGameMenu was called twice on the same instance");
+				return;
+			}
+
             foreach (var tabPage in AllTabPages)
             {
                 if (tabPage.IsCustom && tabPage.PageWindow == null)
@@ -237,6 +277,12 @@ namespace GameMenuExtender.Menus
                 }
             }
 
+			if(SelectedOptionFix != -1)
+			{
+				var optionsPage = ActiveGameMenu.GetPage<OptionsPage>();
+				optionsPage.currentItemIndex = SelectedOptionFix;
+			}
+
             RebuildCustomTabButtons();
 
             foreach (var tab in AllTabs)
@@ -248,6 +294,8 @@ namespace GameMenuExtender.Menus
 
 			IsGameMenuExtended = true;
 		}
+
+		//private void 
 
 		#region Tab Handling
 

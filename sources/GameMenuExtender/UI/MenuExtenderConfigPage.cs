@@ -17,8 +17,11 @@ namespace GameMenuExtender.UI
         private ClickableTextureComponent downArrow;
         private ClickableTextureComponent scrollBar;
         private Rectangle scrollBarRunner;
+		private bool scrolling;
+		private string hoverText;
+		private int currentItemIndex;
 
-        public MenuExtenderConfigPage(int x, int y, int width, int height, bool showUpperRightCloseButton = false) : base(x, y, width, height, showUpperRightCloseButton)
+		public MenuExtenderConfigPage(int x, int y, int width, int height, bool showUpperRightCloseButton = false) : base(x, y, width, height, showUpperRightCloseButton)
         {
             upArrow = new ClickableTextureComponent(new Rectangle(xPositionOnScreen + width + 16, yPositionOnScreen + 64, 44, 48), Game1.mouseCursors, new Rectangle(421, 459, 11, 12), 4f);
             downArrow = new ClickableTextureComponent(new Rectangle(xPositionOnScreen + width + 16, yPositionOnScreen + height - 64, 44, 48), Game1.mouseCursors, new Rectangle(421, 472, 11, 12), 4f);
@@ -28,7 +31,10 @@ namespace GameMenuExtender.UI
 
         public override void draw(SpriteBatch b)
         {
-            SpriteText.drawString(b, "Menu Extender Settings:", xPositionOnScreen + 48, yPositionOnScreen + 112, 999, -1, 999, 1f, 0.1f);
+			b.End();
+			b.Begin(SpriteSortMode.FrontToBack, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null);
+			SpriteText.drawString(b, "Menu Extender Settings:", xPositionOnScreen + 48, yPositionOnScreen + 112, 999, -1, 999, 1f, 0.1f);
+
             //Utility.drawTextWithShadow(b, "Menu Extender Settings", Game1.dialogueFont, new Vector2(xPositionOnScreen + 45, yPositionOnScreen + 120), Game1.textColor);
 
             b.End();
@@ -42,5 +48,10 @@ namespace GameMenuExtender.UI
                 scrollBar.draw(b);
             }
         }
-    }
+
+		public override void receiveLeftClick(int x, int y, bool playSound = true)
+		{
+			base.receiveLeftClick(x, y, playSound);
+		}
+	}
 }

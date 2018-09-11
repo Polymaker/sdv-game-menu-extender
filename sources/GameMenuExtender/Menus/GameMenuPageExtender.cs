@@ -16,7 +16,7 @@ namespace GameMenuExtender.Menus
 {
 	internal sealed class GameMenuPageExtender : IClickableMenu
 	{
-		public GameMenuTab MenuTab { get; private set; }
+		public VanillaTab MenuTab { get; private set; }
 
 		public GameMenuManager Manager => MenuTab.Manager;
 
@@ -27,7 +27,7 @@ namespace GameMenuExtender.Menus
         private const int LeftSideStartOffsetY = 128;
         private const int LeftSideTabOffsetX = 24;
 
-		public GameMenuPageExtender(GameMenuTab tab)
+		public GameMenuPageExtender(VanillaTab tab)
 		{
 			MenuTab = tab;
 		}
