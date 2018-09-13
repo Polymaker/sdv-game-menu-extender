@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewValley;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,5 +20,10 @@ namespace GameMenuExtender.Data
             SourceRect = sourceRect;
         }
 
-    }
+		public static Icon UpArrow => new Icon(Game1.mouseCursors, new Rectangle(421, 459, 11, 12));
+
+		public static Icon DownArrow => new Icon(Game1.mouseCursors, new Rectangle(421, 472, 11, 12));
+
+
+	}
 }

@@ -102,7 +102,6 @@ namespace GameMenuExtender.Menus
 						return;
 					OnGameMenuClosed();
 				}
-
 				ActiveGameMenu = (GameMenu)Game1.activeClickableMenu;
 				OnGameMenuOpened();
 			}

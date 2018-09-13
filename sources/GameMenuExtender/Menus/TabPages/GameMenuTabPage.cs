@@ -104,6 +104,11 @@ namespace GameMenuExtender.Menus
 			{
 				PageWindow = CreatePageInstance(PageType, IsVanilla ? finalBounds : menuBounds);
 			}
+
+			if(PageWindow != null && PageWindow is UI.MenuExtenderConfigPage)
+			{
+				(PageWindow as UI.MenuExtenderConfigPage).LoadConfigs(Manager);
+			}
         }
 	}
 }
