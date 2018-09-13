@@ -88,6 +88,7 @@
     <Compile Include="UI\MenuExtenderConfigPage.cs" />
     <Compile Include="UI\UIControl.cs" />
     <Compile Include="UI\UILabel.cs" />
+    <Compile Include="UI\UIScrollBar.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="manifest.json" />
