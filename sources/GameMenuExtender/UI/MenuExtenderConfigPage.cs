@@ -1,4 +1,5 @@
-﻿using GameMenuExtender.Menus;
+﻿using GameMenuExtender.Data;
+using GameMenuExtender.Menus;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
@@ -49,11 +50,22 @@ namespace GameMenuExtender.UI
 
 				foreach(var page in tab.TabPages)
 				{
-					var pageLabel = new UILabel(Game1.smallFont, "Page : " + page.Label);
+					var pageLabel = new UILabel(Game1.smallFont, "Page : " + page.Label.Replace(Environment.NewLine, " "));
 					pageLabel.X = xPositionOnScreen + 48 + 30;
 					pageLabel.Y = currentY;
 					ConfigControls.Add(pageLabel);
-					currentY += pageLabel.height + 3;
+					var btnSize = pageLabel.height + 8;
+					var moveDownBtn = new UIButton(xPositionOnScreen + width - 160, currentY - 4, btnSize, btnSize)
+					{
+						Image = Icon.DownArrow
+					};
+					var moveUpBtn = new UIButton(xPositionOnScreen + width - 160 + btnSize + 4, currentY - 4, btnSize, btnSize)
+					{
+						Image = Icon.UpArrow
+					};
+					ConfigControls.Add(moveDownBtn);
+					ConfigControls.Add(moveUpBtn);
+					currentY += pageLabel.height + 6;
 				}
 			}
 		}

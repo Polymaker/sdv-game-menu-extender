@@ -12,6 +12,7 @@ namespace GameMenuExtender.UI
 	public class UIControl : IClickableMenu
 	{
 		protected string _Text;
+		//private bool _AutoSize;
 
 		public string Text
 		{
@@ -26,9 +27,15 @@ namespace GameMenuExtender.UI
 			}
 		}
 
+		public SpriteFont Font { get; set; }
+
+		public Color ForeColor { get; set; }
+
 		public Vector2 ScrollOffset { get; set; }
 
 		public Vector2 ScreenLocation => new Vector2(Bounds.X + ScrollOffset.X, Bounds.Y + ScrollOffset.Y);
+
+		public Rectangle ScreenBounds => new Rectangle((int)ScreenLocation.X, (int)ScreenLocation.Y, Width, height);
 
 		public Rectangle Bounds
 		{
@@ -58,6 +65,18 @@ namespace GameMenuExtender.UI
 			set => Bounds = new Rectangle(Bounds.X, value, Bounds.Width, Bounds.Height);
 		}
 
+		public int Width
+		{
+			get => Bounds.Width;
+			set => Bounds = new Rectangle(Bounds.X, Bounds.Y, value, Bounds.Height);
+		}
+
+		public int Height
+		{
+			get => Bounds.Height;
+			set => Bounds = new Rectangle(Bounds.X, Bounds.Y, Bounds.Width, value);
+		}
+
 		public UIControl()
 		{
 
@@ -68,11 +87,35 @@ namespace GameMenuExtender.UI
 
 		}
 
+		protected Vector2 CalculateTextSize()
+		{
+			if (!string.IsNullOrEmpty(Text))
+				return Font.MeasureString(Text);
+			else
+				return Vector2.Zero;
+		}
+
 		protected virtual void OnTextChanged() { }
 
 		protected virtual void OnBoundsChanged()
 		{
 
 		}
+
+		public override void receiveLeftClick(int x, int y, bool playSound = true)
+		{
+			if (Bounds.Contains(x, y))
+				OnLeftClick(x, y);
+		}
+
+		protected virtual void OnLeftClick(int x, int y)
+		{
+
+		}
+
+		//public virtual Vector2 GetAutoSize()
+		//{
+		//	return Vector2.One;
+		//}
 	}
 }

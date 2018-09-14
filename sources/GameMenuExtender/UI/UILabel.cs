@@ -11,9 +11,7 @@ namespace GameMenuExtender.UI
 {
 	public class UILabel : UIControl
 	{
-		public SpriteFont Font { get; set; }
-
-		public Color ForeColor { get; set; }
+		
 
 		private Vector2 TextSize;
 
@@ -33,33 +31,32 @@ namespace GameMenuExtender.UI
 			}
 		}
 
+		public bool DrawShadow { get; set; }
+
 		public UILabel(SpriteFont font, string text)
 		{
 			Font = font;
 			_Text = text;
 			ForeColor = Game1.textColor;
-			CalculateTextSize();
+			TextSize = CalculateTextSize();
 			_AutoSize = true;
 			Size = TextSize;
 		}
 
 		public override void draw(SpriteBatch b)
 		{
-			b.DrawString(Font, Text, ScreenLocation, ForeColor);
+			if (DrawShadow)
+				Utility.drawTextWithShadow(b, Text, Font, ScreenLocation, ForeColor);
+			else
+				b.DrawString(Font, Text, ScreenLocation, ForeColor);
 		}
 
 		protected override void OnTextChanged()
 		{
 			base.OnTextChanged();
-			CalculateTextSize();
+			TextSize = CalculateTextSize();
 		}
 
-		private void CalculateTextSize()
-		{
-			if (!string.IsNullOrEmpty(Text))
-				TextSize = Font.MeasureString(Text);
-			else
-				TextSize = Vector2.Zero;
-		}
+		
 	}
 }

@@ -51,17 +51,12 @@ namespace GameMenuExtender.Menus
 
 		}
 
-		//internal void RemoveAllCustomPages()
-		//{
-		//	PageList.RemoveAll(p => p.IsCustom);
-		//}
-
 		internal void InitializeLayout()
 		{
 			if(CurrentTabPage != null && CurrentTabPage.PageWindow != null)
 			{
 				PageExtender.Initialize(CurrentTabPage.PageWindow);
-				PageExtender.RebuildTabPagesButtons(this);
+				PageExtender.RebuildTabPageButtons(this);
 			}
 			IsTabButtonOffseted = false;
 		}
@@ -71,7 +66,7 @@ namespace GameMenuExtender.Menus
 			if (Manager.CurrentTab != null && Manager.CurrentTabPage.PageWindow != null)
 			{
 				PageExtender.Initialize(Manager.CurrentTabPage.PageWindow);
-				PageExtender.RebuildTabPagesButtons(Manager.CurrentTab);
+				PageExtender.RebuildTabPageButtons(Manager.CurrentTab);
 			}
 		}
 

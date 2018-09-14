@@ -38,12 +38,12 @@ namespace GameMenuExtender.Menus
 				sourePage.width, sourePage.height, sourePage.upperRightCloseButton != null);
 		}
 
-		public void Initialize(CreateMenuPageParams windowParams)
-		{
-			initialize(windowParams.X, windowParams.Y, windowParams.Width, windowParams.Height, windowParams.UpperRightCloseButton);
-		}
+		//public void Initialize(CreateMenuPageParams windowParams)
+		//{
+		//	initialize(windowParams.X, windowParams.Y, windowParams.Width, windowParams.Height, windowParams.UpperRightCloseButton);
+		//}
 
-		internal void RebuildTabPagesButtons(GameMenuTab tab)
+		internal void RebuildTabPageButtons(GameMenuTab tab)
 		{
 			int currentPosY = yPositionOnScreen + LeftSideStartOffsetY;
             int maxLabelWidth = 0;
@@ -228,8 +228,6 @@ namespace GameMenuExtender.Menus
 				return base.overrideSnappyMenuCursorMovementBan();
 		}
 
-       
-
 		public override bool readyToClose()
 		{
 			if (CurrentOverride != null)
@@ -349,15 +347,11 @@ namespace GameMenuExtender.Menus
 			//Draw sub-pages tab buttons
 			DrawPagesTabButtons(b);
 
-			if (Manager.CurrentTabPage != null && Manager.CurrentTabPage.PageWindow != null)
-			{
-				//Draw the page
-				Manager.CurrentTabPage.PageWindow.draw(b);
-			}
-			else
-				base.draw(b);
+			//Draw the page
+			if (CurrentOverride != null)
+				CurrentOverride.draw(b);
 
-            if(!string.IsNullOrWhiteSpace(HoverText))
+			if (!string.IsNullOrWhiteSpace(HoverText))
                 IClickableMenu.drawHoverText(b, HoverText, Game1.smallFont, 0, 0, -1, null, -1, null, null, 0, -1, -1, -1, -1, 1f, null);
         }
 
@@ -424,18 +418,15 @@ namespace GameMenuExtender.Menus
 		{
             foreach (var tab in Manager.AllTabs)
             {
-                if (tab.Visible && tab.TabButton != null)
+                if (tab.Visible && tab.TabButton != null && tab.TabButton.containsPoint(x, y))
                 {
-                    if (tab.TabButton.containsPoint(x, y))
-                    {
-                        if ((tab.IsCustom && !tab.IsSelected) || (Manager.CurrentTab.IsCustom && !tab.IsCustom))
-                        {
-							Manager.ChangeTab(tab);
-							Game1.playSound("smallSelect");
-                            return true;
-                        }
-                    }
-                }
+					if ((tab.IsCustom && !tab.IsSelected) || (Manager.CurrentTab.IsCustom && !tab.IsCustom))
+					{
+						Manager.ChangeTab(tab);
+						Game1.playSound("smallSelect");
+						return true;
+					}
+				}
             }
 
 			if (Manager.CurrentTab == null || Manager.CurrentTab.TabPages.Count(p => p.Visible) == 1)
