@@ -46,35 +46,6 @@ namespace GameMenuExtender.Menus
 			return default(CreateMenuPageParams);
 		}
 
-		public static IClickableMenu CreatePageInstance(Type pageType, CreateMenuPageParams ctorParams)
-		{
-			try
-			{
-				if (pageType.GetConstructor(new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(bool) }) != null)
-				{
-					return (IClickableMenu)Activator.CreateInstance(pageType,
-						new object[] { ctorParams.X, ctorParams.Y, ctorParams.Width, ctorParams.Height, ctorParams.UpperRightCloseButton });
-				}
-				else if (pageType.GetConstructor(new Type[] { typeof(int), typeof(int), typeof(int), typeof(int) }) != null)
-				{
-					return (IClickableMenu)Activator.CreateInstance(pageType,
-						new object[] { ctorParams.X, ctorParams.Y, ctorParams.Width, ctorParams.Height });
-				}
-				else if (pageType.GetConstructor(new Type[0]) != null)
-				{
-					var newPage = (IClickableMenu)Activator.CreateInstance(pageType);
-					newPage.initialize(ctorParams.X, ctorParams.Y, ctorParams.Width, ctorParams.Height, ctorParams.UpperRightCloseButton);
-					return newPage;
-				}
-			}
-			catch /*(Exception ex)*/
-			{
-				
-			}
-
-			return null;
-		}
-
 		internal void CalculateGameMenuOffset(GameMenu menu)
 		{
 			var pageBounds = GetMenuPageParams();
@@ -102,12 +73,7 @@ namespace GameMenuExtender.Menus
                 PageWindow.initialize(finalBounds.X, finalBounds.Y, finalBounds.Width, finalBounds.Height, PageWindow.upperRightCloseButton != null);
             else
 			{
-				PageWindow = CreatePageInstance(PageType, IsVanilla ? finalBounds : menuBounds);
-			}
-
-			if(PageWindow != null && PageWindow is UI.MenuExtenderConfigPage)
-			{
-				(PageWindow as UI.MenuExtenderConfigPage).LoadConfigs(Manager);
+				PageWindow = Manager.CreatePageInstance(PageType, IsVanilla ? finalBounds : menuBounds);
 			}
         }
 	}

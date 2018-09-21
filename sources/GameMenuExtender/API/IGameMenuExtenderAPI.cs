@@ -31,13 +31,13 @@ namespace GameMenuExtender.API
         void RegisterTabPageExtension(string tabName, string pageName, string pageLabel, Type pageMenuClass);
 
 		/// <summary>
-		/// 
+		/// Gets the current TabPage displayed in the GameMenu
 		/// </summary>
 		/// <returns></returns>
 		IClickableMenu GetCurrentTabPage();
 
         /// <summary>
-        /// 
+        /// Gets the current TabPage name displayed in the GameMenu
         /// </summary>
         /// <returns></returns>
         string GetCurrentTabPageName();

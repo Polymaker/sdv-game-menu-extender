@@ -1,6 +1,6 @@
 ﻿using GameMenuExtender.API;
+using GameMenuExtender.Compatibility;
 using GameMenuExtender.Config;
-using GameMenuExtender.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -18,6 +18,7 @@ namespace GameMenuExtender.Menus
     internal class GameMenuManager
     {
 		internal GameMenuExtenderMod Mod { get; private set; }
+
 		public IModHelper Helper => Mod.Helper;
 
 		public IMonitor Monitor => Mod.Monitor;
@@ -25,10 +26,11 @@ namespace GameMenuExtender.Menus
 		public bool HasInitialized { get; private set; }
 
         internal GameMenu ActiveGameMenu { get; private set; }
+        internal List<CompatibilityPatch> CompatibilityPatches { get; } = new List<CompatibilityPatch>();
 
-		#region Tabs & Tab Pages Properties
+        #region Tabs & Tab Pages Properties
 
-		public IEnumerable<GameMenuTab> AllTabs => VanillaTabs.Select(t => (GameMenuTab)t).Concat(CustomTabs);
+        public IEnumerable<GameMenuTab> AllTabs => VanillaTabs.Select(t => (GameMenuTab)t).Concat(CustomTabs);
 
 		public List<CustomTab> CustomTabs { get; private set; }
 
@@ -54,8 +56,11 @@ namespace GameMenuExtender.Menus
 		public bool IsGameMenuExtended { get; private set; }
 
         internal CreateMenuPageParams GameWindowBounds;
+        internal Rectangle JuminoIconDefaultBounds;
 
         public event EventHandler CurrentTabPageChanged;
+        public event EventHandler GameMenuOpened;
+        public event EventHandler GameMenuClosed;
 
         internal GameMenuManager(GameMenuExtenderMod mod)
         {
@@ -136,28 +141,44 @@ namespace GameMenuExtender.Menus
 				InitializeVanillaMenus();
 				Mod.ApiInstance.PerformRegistration();
 				HasInitialized = true;
-                RegisterTabPageExtension(Mod.ModManifest, "options", "config", "Menu\r\nExtender", typeof(MenuExtenderConfigPage));
-			}
+            }
 		}
 
-		#region Game Menu Tracking
+        public void InitializeCompatibilityFixes()
+        {
+            var patchClasses = typeof(GameMenuManager).Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(CompatibilityPatch)) && t != typeof(CompatibilityPatch)).ToList();
+            foreach(var patchClass in patchClasses)
+            {
+                if(!CompatibilityPatches.Any(p=>p.GetType() == patchClass))
+                {
+                    var patch = (CompatibilityPatch)Activator.CreateInstance(patchClass, this);
+                    if (patch.IsAppliable() && patch.InitializePatch())
+                    {
+                        patch.SuscribeToManagerEvents();
+                        CompatibilityPatches.Add(patch);
+                    }
+                }
+            }
+        }
 
-		private void OnGameMenuOpened()
+        #region Game Menu Tracking
+
+        private void OnGameMenuOpened()
 		{
-			Monitor.Log("OnGameMenuOpened");
 			if (!HasInitialized)
 				Initialize();
 			ExtendGameMenu();
+            GameMenuOpened?.Invoke(null, EventArgs.Empty);
 		}
 
 		private void OnGameMenuClosed()
 		{
-			Monitor.Log("OnGameMenuClosed");
 			CurrentTabOverride = null;
 			CustomTabHost = null;
 			CurrentTabIndex = 0;
             ActiveGameMenu = null;
             IsGameMenuExtended = false;
+            GameMenuClosed?.Invoke(null, EventArgs.Empty);
         }
 
 		private void OnGameMenuUpdate()
@@ -197,15 +218,21 @@ namespace GameMenuExtender.Menus
             }
         }
 
+        /// <summary>
+        /// Replaces the GameMenu Tabs with GameMenuPageExtender
+        /// </summary>
 		internal void ExtendGameMenu()
         {
+            //Init & reset stuff
 			CurrentTabOverride = null;
 			CustomTabHost = null;
 			CurrentTabIndex = ActiveGameMenu.currentTab;
 
 			GameWindowBounds = new CreateMenuPageParams { X = ActiveGameMenu.xPositionOnScreen, Y = ActiveGameMenu.yPositionOnScreen, Width = ActiveGameMenu.width, Height = ActiveGameMenu.height };
+            JuminoIconDefaultBounds = ActiveGameMenu.junimoNoteIcon.bounds;
 
-			var currentTabs = Helper.Reflection.GetField<List<ClickableComponent>>(ActiveGameMenu, "tabs").GetValue();
+            //Override pages
+            var currentTabs = Helper.Reflection.GetField<List<ClickableComponent>>(ActiveGameMenu, "tabs").GetValue();
             var currentPages = Helper.Reflection.GetField<List<IClickableMenu>>(ActiveGameMenu, "pages").GetValue();
 			bool alreadyExtended = false;
 
@@ -224,6 +251,7 @@ namespace GameMenuExtender.Menus
                 
                 var vanillaPageMenuType = VanillaTab.GetDefaultTabPageType(currentTab.TabName);
                 
+                //if the current page is not vanilla (overrided by another mod)
                 if (currentPage.GetType() != vanillaPageMenuType)
                 {
                     currentTab.VanillaPage.PageWindow = null;
@@ -236,7 +264,7 @@ namespace GameMenuExtender.Menus
 
 						if (customTabPage == null)
                         {
-							Monitor.Log($"The tab page '{currentTab.Name}' is overrided by another mod ({customPageMod.Name})");
+							Monitor.Log($"The tab page '{currentTab.Name}' is overrided by another mod ({customPageMod.Name})", LogLevel.Info);
                             customTabPage = RegisterTabPageExtension(customPageMod, currentTab.Name, currentTab.Name, customPageMod.Name, currentPage.GetType(), false);
 							customTabPage.CalculateGameMenuOffset(ActiveGameMenu);
 						}
@@ -246,7 +274,7 @@ namespace GameMenuExtender.Menus
 					}
 					else
 					{
-						Monitor.Log($"The tab page '{currentTab.Name}' seems to be overrided by another mod but could not be identified.");
+						Monitor.Log($"The tab page '{currentTab.Name}' seems to be overrided by another mod but could not be identified.", LogLevel.Warn);
 					}
                 }
                 else
@@ -263,6 +291,8 @@ namespace GameMenuExtender.Menus
 				return;
 			}
 
+            //Ensure that all tabs are instanciated and initialized. 
+            //Re -instanciate any custom menus that were previously loaded following game logic (the menu and tabs always get re-instanciated)
             foreach (var tabPage in AllTabPages)
             {
                 if (tabPage.IsCustom && tabPage.PageWindow == null)
@@ -276,10 +306,13 @@ namespace GameMenuExtender.Menus
                 }
             }
 
-			if(SelectedOptionFix != -1)
+            //fix UI scaling bug in option page. 
+            //there is code in the game to scroll back to the scaling option but the menu gets instanciated twice for unknown reason and the second time the parameter is not set
+            if (SelectedOptionFix != -1)
 			{
 				var optionsPage = ActiveGameMenu.GetPage<OptionsPage>();
-				optionsPage.currentItemIndex = SelectedOptionFix;
+                if (optionsPage != null)
+                    optionsPage.currentItemIndex = SelectedOptionFix;
 			}
 
             RebuildCustomTabButtons();
@@ -293,8 +326,6 @@ namespace GameMenuExtender.Menus
 
 			IsGameMenuExtended = true;
 		}
-
-		//private void 
 
 		#region Tab Handling
 
@@ -346,16 +377,7 @@ namespace GameMenuExtender.Menus
 
         internal void OnCurrentTabPageChanged()
         {
-            CurrentTabPageChanged?.Invoke(this, EventArgs.Empty);
-
-            if (CurrentTabPage?.PageWindow is MenuExtenderConfigPage)
-            {
-                ActiveGameMenu.junimoNoteIcon.visible = false;
-            }
-            else
-            {
-                ActiveGameMenu.junimoNoteIcon.visible = true;
-            }
+            CurrentTabPageChanged?.Invoke(null, EventArgs.Empty);
         }
 
         #endregion
@@ -414,6 +436,39 @@ namespace GameMenuExtender.Menus
             //b.End();
             //b.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null);
         }
+
+        #region Tab Page
+
+        internal IClickableMenu CreatePageInstance(Type pageType, CreateMenuPageParams ctorParams)
+        {
+            try
+            {
+                if (pageType.GetConstructor(new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(bool) }) != null)
+                {
+                    return (IClickableMenu)Activator.CreateInstance(pageType,
+                        new object[] { ctorParams.X, ctorParams.Y, ctorParams.Width, ctorParams.Height, ctorParams.UpperRightCloseButton });
+                }
+                else if (pageType.GetConstructor(new Type[] { typeof(int), typeof(int), typeof(int), typeof(int) }) != null)
+                {
+                    return (IClickableMenu)Activator.CreateInstance(pageType,
+                        new object[] { ctorParams.X, ctorParams.Y, ctorParams.Width, ctorParams.Height });
+                }
+                else if (pageType.GetConstructor(new Type[0]) != null)
+                {
+                    var newPage = (IClickableMenu)Activator.CreateInstance(pageType);
+                    newPage.initialize(ctorParams.X, ctorParams.Y, ctorParams.Width, ctorParams.Height, ctorParams.UpperRightCloseButton);
+                    return newPage;
+                }
+            }
+            catch (Exception ex)
+            {
+                Monitor.Log($"[CreatePageInstance] Could not create page of type {pageType?.Name ?? "null"}:\r\n{ex.ToString()}", LogLevel.Error);
+            }
+
+            return null;
+        }
+
+        #endregion
 
         #region API
 
