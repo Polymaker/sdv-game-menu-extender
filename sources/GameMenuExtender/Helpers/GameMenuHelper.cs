@@ -1,4 +1,5 @@
-﻿using GameMenuExtender.Menus;
+﻿using GameMenuExtender;
+using GameMenuExtender.Menus;
 using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
@@ -45,5 +46,12 @@ namespace StardewValley.Menus
 
 			return pages?.OfType<T>().FirstOrDefault();
 		}
-	}
+
+        public static string GetVanillaTabLabel(GameMenuTabs tab)
+        {
+            if (tab == GameMenuTabs.Custom)
+                return string.Empty;
+            return Game1.content.LoadString($"Strings\\UI:GameMenu_{tab}");
+        }
+    }
 }

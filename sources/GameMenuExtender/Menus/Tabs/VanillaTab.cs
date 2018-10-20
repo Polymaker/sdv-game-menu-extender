@@ -1,4 +1,5 @@
-﻿using StardewValley.Menus;
+﻿using GameMenuExtender.Config;
+using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +23,8 @@ namespace GameMenuExtender.Menus
         public override GameMenuTabs TabName => (GameMenuTabs)TabIndex;
 
         public VanillaTabPage VanillaPage => TabPages.OfType<VanillaTabPage>().FirstOrDefault();
+
+        //public VanillaTabConfig Configuration => Config as VanillaTabConfig;
 
         internal GameMenuPageExtender PageExtender { get; private set; }
 

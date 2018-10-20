@@ -69,9 +69,14 @@
     <Compile Include="Compatibility\GiftTasteHelperPatch.cs" />
     <Compile Include="Config\ConfigBase.cs" />
     <Compile Include="Config\ConfigManager.cs" />
+    <Compile Include="Config\CustomTabConfig.cs" />
     <Compile Include="Config\GameMenuExtenderConfig.cs" />
     <Compile Include="Config\GameMenuTabConfig.cs" />
-    <Compile Include="Config\GameMenuTabPageConfig.cs" />
+    <Compile Include="Config\CustomTabPageConfig.cs" />
+    <Compile Include="Config\IMenuTabConfig.cs" />
+    <Compile Include="Config\IMenuTabPageConfig.cs" />
+    <Compile Include="Config\VanillaTabConfig.cs" />
+    <Compile Include="Config\VanillaTabPageConfig.cs" />
     <Compile Include="Data\Icon.cs" />
     <Compile Include="GameMenuExtenderMod.cs" />
     <Compile Include="Helpers\GameMenuHelper.cs" />
@@ -87,6 +92,7 @@
     <Compile Include="Menus\GameMenuManager.cs" />
     <Compile Include="Menus\Tabs\GameMenuTab.cs" />
     <Compile Include="Menus\TabPages\GameMenuTabPage.cs" />
+    <Compile Include="Menus\Tabs\IGameMenuTab.cs" />
     <Compile Include="Menus\Tabs\VanillaTab.cs" />
     <Compile Include="Menus\MenuType.cs" />
     <Compile Include="Menus\TabPages\VanillaTabPage.cs" />

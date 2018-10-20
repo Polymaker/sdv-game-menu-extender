@@ -57,5 +57,20 @@ namespace GameMenuExtender.Utilities
 
             throw new NotSupportedException();
         }
+
+        public List<V> AsList()
+        {
+            if (typeof(K).IsEnum)
+            {
+                var enumValues = (K[])Enum.GetValues(typeof(K));
+                var itemList = new List<V>();
+                foreach (var val in enumValues)
+                    itemList.Add(this[val]);
+
+                return itemList;
+            }
+
+            throw new NotSupportedException();
+        }
     }
 }

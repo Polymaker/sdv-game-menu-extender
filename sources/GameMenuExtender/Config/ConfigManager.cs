@@ -14,7 +14,7 @@ namespace GameMenuExtender.Config
 
         public List<GameMenuTabConfig> TabConfigs { get; } = new List<GameMenuTabConfig>();
 
-        public List<GameMenuTabPageConfig> TabPagesConfigs { get; } = new List<GameMenuTabPageConfig>();
+        public List<CustomTabPageConfig> TabPagesConfigs { get; } = new List<CustomTabPageConfig>();
 
         public IEnumerable<ConfigBase> AllConfigs => TabConfigs.OfType<ConfigBase>().Concat(TabPagesConfigs);
 
@@ -29,18 +29,18 @@ namespace GameMenuExtender.Config
             TabPagesConfigs.Clear();
 
             var configObj = Mod.Helper.ReadConfig<GameMenuExtenderConfig>();
+            configObj.LinkTabsAndPages();
 
-            foreach(var vTabConfig in configObj.VanillaTabs.AsDictionary())
+            foreach(var vTabConfig in configObj.VanillaTabs.AsList())
             {
-                if(vTabConfig.Value != null && !string.IsNullOrEmpty(vTabConfig.Value.DefaultPage))
+                if(vTabConfig != null && !string.IsNullOrEmpty(vTabConfig.DefaultPage))
                 {
-                    TabConfigs.Add(new GameMenuTabConfig(vTabConfig.Value, vTabConfig.Key.ToString()));
-                    if (vTabConfig.Value.TabPages != null)
+                    TabConfigs.Add(new VanillaTabConfig(vTabConfig));
+                    if (vTabConfig.TabPages != null)
                     {
-                        foreach(var tabPage in vTabConfig.Value.TabPages)
-                            TabPagesConfigs.Add(new GameMenuTabPageConfig(vTabConfig.Key.ToString(), tabPage));
+                        foreach (var tabPage in vTabConfig.TabPages)
+                            TabPagesConfigs.Add(new CustomTabPageConfig(tabPage));
                     }
-                    
                 }
             }
 
@@ -48,9 +48,9 @@ namespace GameMenuExtender.Config
             {
                 foreach(var customTabConfig in configObj.CustomTabs)
                 {
-                    TabConfigs.Add(new GameMenuTabConfig(customTabConfig));
+                    TabConfigs.Add(new CustomTabConfig(customTabConfig));
                     foreach (var tabPage in customTabConfig.TabPages)
-                        TabPagesConfigs.Add(new GameMenuTabPageConfig(customTabConfig.Name, tabPage));
+                        TabPagesConfigs.Add(new CustomTabPageConfig(tabPage));
                 }
             }
         }
@@ -62,17 +62,17 @@ namespace GameMenuExtender.Config
             foreach(var vTab in TabConfigs.Where(c => c.IsVanilla))
             {
                 configObj.VanillaTabs[vTab.Tab] = (GameMenuExtenderConfig.VanillaTabConfig)vTab.GetConfigObject();
-                configObj.VanillaTabs[vTab.Tab].TabPages = TabPagesConfigs.Where(p => p.TabName.ToLower() == vTab.Name.ToLower()).Select(c => c.GetConfigObject()).ToArray();
+                configObj.VanillaTabs[vTab.Tab].TabPages = TabPagesConfigs.Where(p => p.TabName.ToLower() == vTab.Name.ToLower()).OrderBy(c => c.Index).Select(c => c.GetConfigObject()).ToArray();
                 if (configObj.VanillaTabs[vTab.Tab].TabPages.Length == 0)
                     configObj.VanillaTabs[vTab.Tab].TabPages = null;
             }
 
             var customConfigs = new List<GameMenuExtenderConfig.CustomTabConfig>();
 
-            foreach (var cTab in TabConfigs.Where(c => !c.IsVanilla))
+            foreach (var cTab in TabConfigs.Where(c => !c.IsVanilla).OrderBy(c => c.Index))
             {
                 var tabConfig = (GameMenuExtenderConfig.CustomTabConfig)cTab.GetConfigObject();
-                tabConfig.TabPages = TabPagesConfigs.Where(p => p.TabName.ToLower() == cTab.Name.ToLower()).Select(c => c.GetConfigObject()).ToArray();
+                tabConfig.TabPages = TabPagesConfigs.Where(p => p.TabName.ToLower() == cTab.Name.ToLower()).OrderBy(c => c.Index).Select(c => c.GetConfigObject()).ToArray();
                 if (tabConfig.TabPages.Length == 0)
                     tabConfig.TabPages = null;
                 customConfigs.Add(tabConfig);
@@ -85,14 +85,19 @@ namespace GameMenuExtender.Config
             AllConfigs.ToList().ForEach(c => c.MarkAsSaved());
         }
 
-        public GameMenuTabConfig GetVanillaTabConfig(GameMenuTabs tab)
+        public VanillaTabConfig GetVanillaTabConfig(GameMenuTabs tab)
         {
-            return TabConfigs.FirstOrDefault(c => c.Tab == tab);
+            return TabConfigs.OfType<VanillaTabConfig>().FirstOrDefault(c => c.Tab == tab);
         }
 
-        public List<GameMenuTabPageConfig> GetTabPagesConfig(GameMenuTab tab)
+        public List<CustomTabPageConfig> GetTabPagesConfig(GameMenuTab tab)
         {
             return TabPagesConfigs.Where(c => tab.NameEquals(c.TabName)).ToList();
+        }
+
+        public List<CustomTabPageConfig> GetTabPagesConfig(GameMenuExtenderConfig.TabConfig tab)
+        {
+            return TabPagesConfigs.Where(c => c.TabName.ToLower() == tab.Name.ToLower()).ToList();
         }
 
         public GameMenuTabConfig LoadOrCreateConfig(GameMenuTab tab)
@@ -103,7 +108,7 @@ namespace GameMenuExtender.Config
                 tabConfig = TabConfigs.FirstOrDefault(c => tab.NameEquals(c.Name) && c.IsVanilla);
                 if(tabConfig == null)
                 {
-                    tabConfig = new GameMenuTabConfig((VanillaTab)tab);
+                    tabConfig = new VanillaTabConfig((VanillaTab)tab);
                     TabConfigs.Add(tabConfig);
                 }
             }
@@ -112,46 +117,47 @@ namespace GameMenuExtender.Config
                 tabConfig = TabConfigs.FirstOrDefault(c => tab.NameEquals(c.Name) && !c.IsVanilla);
                 if(tabConfig == null)
                 {
-                    tabConfig = new GameMenuTabConfig((CustomTab)tab);
+                    tabConfig = new CustomTabConfig((CustomTab)tab);
                     tabConfig.Index = TabConfigs.Count(t => !t.IsVanilla);
                     TabConfigs.Add(tabConfig);
                 }
             }
 
             tabConfig.DefaultTitle = tab.Label;
-            if (tab is VanillaTab vtab)
-                tabConfig.DefaultPageTitle = vtab.VanillaPage.Label;
 
-
-            if (string.IsNullOrEmpty(tabConfig.Title))
-                tabConfig._Title = tab.Label;
-
-            if (string.IsNullOrEmpty(tabConfig.VanillaPageTitle) && tab is VanillaTab vt)
-                tabConfig._VanillaPageTitle = vt.VanillaPage.Label;
-
+            if (tabConfig.IsVanilla)
+            {
+                var vConf = (VanillaTabConfig)tabConfig;
+                var vTab = (VanillaTab)tab;
+                vConf.DefaultPageTitle = vTab.VanillaPage.Label;
+            }
+            
             return tabConfig;
         }
 
-        public GameMenuTabPageConfig LoadOrCreateConfig(GameMenuTabPage tabPage)
+        public IMenuTabPageConfig LoadOrCreateConfig(GameMenuTabPage tabPage)
         {
-            GameMenuTabPageConfig tabPageConfig = TabPagesConfigs.FirstOrDefault(p => tabPage.NameEquals(p.Name) && tabPage.Tab.NameEquals(p.TabName));
+            CustomTabPageConfig tabPageConfig = TabPagesConfigs.FirstOrDefault(p => tabPage.NameEquals(p.Name) && tabPage.Tab.NameEquals(p.TabName));
 
             if(tabPageConfig == null)
             {
                 var tabConfig = TabConfigs.FirstOrDefault(c => tabPage.Tab.NameEquals(c.Name));
 
-                tabPageConfig = new GameMenuTabPageConfig(tabPage)
+                if (tabPage.IsVanilla)
+                    return new VanillaTabPageConfig(tabConfig as VanillaTabConfig);
+
+                tabPageConfig = new CustomTabPageConfig(tabPage)
                 {
                     Index = GetTabPagesConfig(tabPage.Tab).Count
                 };
-                if (tabConfig.VanillaPageIndex > 0)
+
+                if (tabConfig is VanillaTabConfig vtc && vtc.PageIndex > 0)
                     tabPageConfig.Index += 1;
 
                 TabPagesConfigs.Add(tabPageConfig);
             }
 
-            if (string.IsNullOrEmpty(tabPageConfig.Title))
-                tabPageConfig.Title = tabPage.Label;
+            tabPageConfig.DefaultTitle = tabPage.Label;
 
             return tabPageConfig;
         }

@@ -1,4 +1,5 @@
-﻿using StardewValley.Menus;
+﻿using GameMenuExtender.Config;
+using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,22 +23,15 @@ namespace GameMenuExtender.Menus
 
 		public IClickableMenu PageWindow { get; internal set; }
 
-        //public int VisibleIndex => Visible ? Tab.TabPages.Where(t => t.Visible).ToList().IndexOf(this) : -1;
+        public IMenuTabPageConfig Configuration { get; private set; }
 
         public int DisplayIndex
         {
-            get => IsVanilla ? Tab.Config.VanillaPageIndex : (this as CustomTabPage).Config.Index;
-            set
-            {
-                if (IsVanilla)
-                    Tab.Config.VanillaPageIndex = value;
-                else
-                    (this as CustomTabPage).Config.Index = value;
-            }
+            get => Configuration.Index;
+            set => Configuration.Index = value;
         }
 
 		public CreateMenuPageParams GameWindowOffset { get; protected set; }
-
 
 		internal GameMenuTabPage(GameMenuTab tab, string name) : base(tab.Manager, name)
         {
@@ -95,6 +89,12 @@ namespace GameMenuExtender.Menus
                     PageWindow = oldPage;
                 }
 			}
+        }
+
+        public void LoadConfig()
+        {
+            Configuration = Manager.Mod.Configs.LoadOrCreateConfig(this);
+            Label = Configuration.Title;
         }
 	}
 }

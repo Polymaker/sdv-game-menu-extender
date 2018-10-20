@@ -13,7 +13,7 @@ namespace GameMenuExtender.Menus
     {
         public override bool IsCustom => true;
 
-        public int DisplayIndex => Config?.Index ?? 0;
+        public int DisplayIndex { get => Configuration?.Index ?? 0; set => Configuration.Index = value; }
 
         public bool DrawText { get; set; }
 

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GameMenuExtender.Menus
 {
-    public abstract class GameMenuTab : GameMenuElement
+    public abstract class GameMenuTab : GameMenuElement/*, IGameMenuTab*/
     {
         private List<GameMenuTabPage> _TabPages;
 
@@ -31,7 +31,9 @@ namespace GameMenuExtender.Menus
 
         public GameMenuTabPage CurrentTabPage => (CurrentTabPageIndex >= 0 && CurrentTabPageIndex < TabPages.Count) ? TabPages[CurrentTabPageIndex] : null;
 
-        public GameMenuTabConfig Config { get; private set; }
+        //public GameMenuTabConfig Config { get; private set; }
+
+        public IMenuTabConfig Configuration { get; private set; }
 
         internal GameMenuTab(GameMenuManager manager, string name) : base(manager, name)
         {
@@ -66,7 +68,7 @@ namespace GameMenuExtender.Menus
 
             for (int i = 0; i < TabPages.Count; i++)
             {
-                if (TabPages[i].NameEquals(Config.DefaultPage))
+                if (TabPages[i].NameEquals(Configuration.DefaultPage))
                 {
                     CurrentTabPageIndex = i;
                     break;
@@ -92,18 +94,23 @@ namespace GameMenuExtender.Menus
 
         public void LoadConfig()
         {
-            Config = Manager.Mod.Configs.LoadOrCreateConfig(this);
-            Label = Config.Title;
+            Configuration = Manager.Mod.Configs.LoadOrCreateConfig(this);
+            Label = Configuration.Title;
         }
 
         public void OrganizeTabPages()
         {
             int currentIndex = 0;
 
-            foreach(var page in TabPages.OrderByDescending(p => p.NameEquals(Config.DefaultPage)).ThenBy(p => p.DisplayIndex))
+            foreach (var page in TabPages.OrderBy(p => p.DisplayIndex))
             {
                 page.DisplayIndex = currentIndex++;
             }
+
+            //foreach(var page in TabPages.OrderByDescending(p => p.NameEquals(Configuration.DefaultPage)).ThenBy(p => p.DisplayIndex))
+            //{
+            //    page.DisplayIndex = currentIndex++;
+            //}
 
             _TabPages = _TabPages.OrderBy(p => p.DisplayIndex).ToList();
         }

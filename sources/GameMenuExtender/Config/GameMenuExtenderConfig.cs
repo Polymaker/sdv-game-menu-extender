@@ -79,18 +79,70 @@ namespace GameMenuExtender.Config
             );
         }
 
+        public void LinkTabsAndPages()
+        {
+            foreach(var kv in VanillaTabs.AsDictionary())
+            {
+                if (kv.Value == null)
+                    continue;
+
+                kv.Value.MenuTab = kv.Key;
+
+                if(kv.Value.TabPages != null)
+                {
+                    int index = 0;
+                    foreach (var page in kv.Value.TabPages)
+                    {
+                        page.TabName = kv.Key.ToString();
+                        page.Index = index++;
+                    }
+                }
+            }
+
+            if(CustomTabs != null)
+            {
+                int tabIndex = 0;
+                foreach (var tab in CustomTabs)
+                {
+                    tab.Index = tabIndex++;
+                    if (tab.TabPages != null)
+                    {
+                        int pageIndex = 0;
+                        foreach (var page in tab.TabPages)
+                        {
+                            page.TabName = tab.Name;
+                            page.Index = pageIndex++;
+                        }
+                    }
+                }
+            }
+        }
+
         public class CustomTabPageConfig
         {
+            [JsonIgnore]
+            public string TabName { get; set; }
+
             public string Name { get; set; }
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public string Title { get; set; }
+
+            [JsonIgnore]
             public int Index { get; set; }
+
+            [DefaultValue(true), JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
             public bool Visible { get; set; } = true;
+
             [DefaultValue(false), JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
             public bool IsNonAPI { get; set; } = false;
         }
 
         public abstract class TabConfig
         {
+            public virtual string Name { get; set; }
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public string Title { get; set; }
             public string DefaultPage { get; set; }
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public CustomTabPageConfig[] TabPages { get; set; }// = new CustomTabPageConfig[0];
@@ -98,23 +150,27 @@ namespace GameMenuExtender.Config
 
         public class VanillaTabConfig : TabConfig
         {
-            //[JsonIgnore]
-            //public string Name { get; set; }
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            public string Title { get; set; }
+            [JsonIgnore]
+            public GameMenuTabs MenuTab { get; set; }
+
+            [JsonIgnore]
+            public override string Name { get => MenuTab.ToString(); set { } }
+
             [DefaultValue(true), JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
             public bool VanillaPageVisible { get; set; } = true;
+
             [DefaultValue(0), JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
             public int VanillaPageIndex { get; set; }
+
             [DefaultValue(null), JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
             public string VanillaPageTitle { get; set; }
         }
 
         public class CustomTabConfig : TabConfig
         {
-            public string Name { get; set; }
-            public string Title { get; set; }
+            [JsonIgnore]
             public int Index { get; set; }
+
             [DefaultValue(true), JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
             public bool Visible { get; set; } = true;
         }
