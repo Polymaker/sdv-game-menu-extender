@@ -208,7 +208,7 @@ namespace GameMenuExtender.Menus
                 }
 				else if(!(GameMenuPageList[ActiveGameMenu.currentTab] is GameMenuPageExtender))
                 {
-                    Monitor.Log($"A mod has overrided a tab page late!");
+                    //Monitor.Log($"A mod has overrided a tab page late!");
                     RegisterNonApiTabPage(CurrentTabReal, GameMenuPageList[ActiveGameMenu.currentTab]);
                     GameMenuPageList[ActiveGameMenu.currentTab] = CurrentTabReal.PageExtender;
                 }
@@ -284,8 +284,7 @@ namespace GameMenuExtender.Menus
                 //if the current page is not vanilla (overrided by another mod)
                 if (currentPage.GetType() != vanillaPageMenuType)
                 {
-                    currentTab.VanillaPage.PageWindow = null;
-
+                    currentTab.VanillaPage.PageWindow = null; //force recreate Vanilla Tab Page
                     RegisterNonApiTabPage(currentTab, currentPage);
                 }
                 else

@@ -138,13 +138,28 @@ namespace GameMenuExtender.Config
             public bool IsNonAPI { get; set; } = false;
         }
 
+        //class TabPageConfigArrayConverter : JsonConverter<CustomTabPageConfig[]>
+        //{
+        //    public override CustomTabPageConfig[] ReadJson(JsonReader reader, Type objectType, CustomTabPageConfig[] existingValue, bool hasExistingValue, JsonSerializer serializer)
+        //    {
+                
+        //        throw new NotImplementedException();
+        //    }
+
+        //    public override void WriteJson(JsonWriter writer, CustomTabPageConfig[] value, JsonSerializer serializer)
+        //    {
+        //        var tempDict = value.ToDictionary(v => v.Name, v => new { v.Title, v.Visible, v.IsNonAPI });
+        //        WriteJson(writer, tempDict, serializer);
+        //    }
+        //}
+
         public abstract class TabConfig
         {
             public virtual string Name { get; set; }
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public string Title { get; set; }
             public string DefaultPage { get; set; }
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)/*, JsonConverter(typeof(TabPageConfigArrayConverter))*/]
             public CustomTabPageConfig[] TabPages { get; set; }// = new CustomTabPageConfig[0];
         }
 
