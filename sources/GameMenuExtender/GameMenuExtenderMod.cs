@@ -1,5 +1,5 @@
 ﻿using GameMenuExtender.API;
-using GameMenuExtender.Config;
+using GameMenuExtender.Configs;
 using GameMenuExtender.Menus;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;

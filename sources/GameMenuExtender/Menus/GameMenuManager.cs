@@ -1,6 +1,6 @@
 ﻿using GameMenuExtender.API;
 using GameMenuExtender.Compatibility;
-using GameMenuExtender.Config;
+using GameMenuExtender.Configs;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;

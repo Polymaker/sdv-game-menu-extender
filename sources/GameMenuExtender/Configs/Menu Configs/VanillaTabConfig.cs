@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameMenuExtender.Config
+namespace GameMenuExtender.Configs
 {
     public class VanillaTabConfig : GameMenuTabConfig
     {

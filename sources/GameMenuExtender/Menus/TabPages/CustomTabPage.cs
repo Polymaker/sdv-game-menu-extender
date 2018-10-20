@@ -1,4 +1,4 @@
-﻿using GameMenuExtender.Config;
+﻿using GameMenuExtender.Configs;
 using StardewModdingAPI;
 using StardewValley.Menus;
 using System;
