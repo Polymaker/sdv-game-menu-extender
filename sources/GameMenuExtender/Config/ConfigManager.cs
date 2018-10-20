@@ -12,8 +12,6 @@ namespace GameMenuExtender.Config
     {
         private IMod Mod;
 
-        //public Dictionary<GameMenuTabs, VanillaTabConfig> VanillaTabConfigs { get; } = new Dictionary<GameMenuTabs, VanillaTabConfig>();
-
         public List<GameMenuTabConfig> TabConfigs { get; } = new List<GameMenuTabConfig>();
 
         public List<GameMenuTabPageConfig> TabPagesConfigs { get; } = new List<GameMenuTabPageConfig>();
@@ -120,11 +118,16 @@ namespace GameMenuExtender.Config
                 }
             }
 
+            tabConfig.DefaultTitle = tab.Label;
+            if (tab is VanillaTab vtab)
+                tabConfig.DefaultPageTitle = vtab.VanillaPage.Label;
+
+
             if (string.IsNullOrEmpty(tabConfig.Title))
-                tabConfig.Title = tab.Label;
+                tabConfig._Title = tab.Label;
 
             if (string.IsNullOrEmpty(tabConfig.VanillaPageTitle) && tab is VanillaTab vt)
-                tabConfig.VanillaPageTitle = vt.VanillaPage.Label;
+                tabConfig._VanillaPageTitle = vt.VanillaPage.Label;
 
             return tabConfig;
         }
@@ -137,15 +140,14 @@ namespace GameMenuExtender.Config
             {
                 var tabConfig = TabConfigs.FirstOrDefault(c => tabPage.Tab.NameEquals(c.Name));
 
-                tabPageConfig = new GameMenuTabPageConfig(tabPage);
-
-                tabPageConfig.Index = GetTabPagesConfig(tabPage.Tab).Count;
+                tabPageConfig = new GameMenuTabPageConfig(tabPage)
+                {
+                    Index = GetTabPagesConfig(tabPage.Tab).Count
+                };
                 if (tabConfig.VanillaPageIndex > 0)
                     tabPageConfig.Index += 1;
 
                 TabPagesConfigs.Add(tabPageConfig);
-                
-
             }
 
             if (string.IsNullOrEmpty(tabPageConfig.Title))

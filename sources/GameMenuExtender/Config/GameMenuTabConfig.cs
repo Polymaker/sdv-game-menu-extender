@@ -10,25 +10,26 @@ namespace GameMenuExtender.Config
     public class GameMenuTabConfig : ConfigBase
     {
         private bool _Visible;
-        private string _Title;
+        internal string _Title;
         private int _Index;
         private string _DefaultPage;
         private bool _VanillaPageVisible;
         private int _VanillaPageIndex;
-        private string _VanillaPageTitle;
+        internal string _VanillaPageTitle;
 
         public GameMenuTabs Tab { get; private set; }
 
         public string Name { get; private set; }
-        public bool Visible { get => _Visible; set { _Visible = value; OnPropertyChanged(nameof(Visible)); } }
-        public string Title { get => _Title; set { _Title = value; OnPropertyChanged(nameof(Title)); } }
-        public int Index { get => _Index; set { _Index = value; OnPropertyChanged(nameof(Index)); } }
-        public string DefaultPage { get => _DefaultPage; set  { _DefaultPage = value; OnPropertyChanged(nameof(DefaultPage)); } }
+        public bool Visible { get => _Visible; set => SetPropertyValue(ref _Visible, value); }
+        public string Title { get => _Title; set => SetPropertyValue(ref _Title, value); }
+        public int Index { get => _Index; set => SetPropertyValue(ref _Index, value); }
+        public string DefaultPage { get => _DefaultPage; set => SetPropertyValue(ref _DefaultPage, value); }
         public bool IsVanilla { get; private set; }
-        public bool VanillaPageVisible { get => _VanillaPageVisible; set { _VanillaPageVisible = value; OnPropertyChanged(nameof(VanillaPageVisible)); } }
-        public int VanillaPageIndex { get => _VanillaPageIndex; set { _VanillaPageIndex = value; OnPropertyChanged(nameof(VanillaPageIndex)); } }
-        public string VanillaPageTitle { get => _VanillaPageTitle; set { _VanillaPageTitle = value; OnPropertyChanged(nameof(VanillaPageTitle)); } }
-        public string DefaultTitle { get; private set; }
+        public bool VanillaPageVisible { get => _VanillaPageVisible; set => SetPropertyValue(ref _VanillaPageVisible, value); }
+        public int VanillaPageIndex { get => _VanillaPageIndex; set => SetPropertyValue(ref _VanillaPageIndex, value);  }
+        public string VanillaPageTitle { get => _VanillaPageTitle; set => SetPropertyValue(ref _VanillaPageTitle, value); }
+        public string DefaultTitle { get;  set; }
+        public string DefaultPageTitle { get; set; }
 
         public GameMenuTabConfig()
         {
@@ -56,8 +57,9 @@ namespace GameMenuExtender.Config
             _DefaultPage = tab.VanillaPage.Name;
             IsVanilla = true;
             _VanillaPageVisible = true;
-            _VanillaPageTitle = tab.VanillaPage.Label;
-            DefaultTitle = tab.VanillaPage.Label;
+            _VanillaPageTitle = tab.Label;
+            DefaultTitle = tab.Label;
+            DefaultPageTitle = tab.VanillaPage.Label;
             Tab = (GameMenuTabs)Enum.Parse(typeof(GameMenuTabs), tab.Name, true);
             IsNew = true;
         }
@@ -92,7 +94,8 @@ namespace GameMenuExtender.Config
                 {
                     DefaultPage = DefaultPage,
                     Title = (!string.IsNullOrEmpty(DefaultTitle) && DefaultTitle == Title) ? null: Title,
-                    VanillaPageVisible = VanillaPageVisible
+                    VanillaPageVisible = VanillaPageVisible,
+                    VanillaPageTitle = (!string.IsNullOrEmpty(DefaultPageTitle) && DefaultPageTitle == VanillaPageTitle) ? null : VanillaPageTitle
                 };
             }
 

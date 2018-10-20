@@ -16,10 +16,11 @@ namespace GameMenuExtender.Config
 
         public string TabName { get; private set; }
         public string Name { get; private set; }
-        public bool Visible { get => _Visible; set { _Visible = value; OnPropertyChanged(nameof(Visible)); } }
-        public string Title { get => _Title; set { _Title = value; OnPropertyChanged(nameof(Title)); } }
+        public bool Visible { get => _Visible; set => SetPropertyValue(ref _Visible, value); }
+        public string Title { get => _Title; set => SetPropertyValue(ref _Title, value); }
+        public int Index { get => _Index; set => SetPropertyValue(ref _Index, value); }
+
         public string DefaultTitle { get; private set; }
-        public int Index { get => _Index; set { _Index = value; OnPropertyChanged(nameof(Index)); } }
         public bool IsNonAPI { get => _IsNonAPI; set { _Visible = value; OnPropertyChanged(nameof(IsNonAPI)); } }
 
         public GameMenuTabPageConfig()

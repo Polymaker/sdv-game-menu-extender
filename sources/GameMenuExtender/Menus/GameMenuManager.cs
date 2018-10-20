@@ -316,7 +316,7 @@ namespace GameMenuExtender.Menus
 				}
                 else
                 {
-                    tabPage.InitializeWindow(tabPage.IsCustom);
+                    tabPage.InitializeWindow(tabPage.IsCustom && !(tabPage is CustomTabPage ctp && ctp.IsNonAPI));
                 }
             }
 
