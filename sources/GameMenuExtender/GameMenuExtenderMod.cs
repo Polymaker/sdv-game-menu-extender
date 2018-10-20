@@ -14,17 +14,21 @@ namespace GameMenuExtender
 	{
         internal GameMenuManager MenuManager;
 		internal GameMenuExtenderAPI ApiInstance;
+        internal ConfigManager Configs { get; private set; }
 
         public override void Entry(IModHelper helper)
 		{
             MenuManager = new GameMenuManager(this);
             ApiInstance = new GameMenuExtenderAPI(this);
-			SaveEvents.AfterLoad += SaveEvents_AfterLoad;
+            Configs = new ConfigManager(this);
+
+            SaveEvents.AfterLoad += SaveEvents_AfterLoad;
 		}
 
 		private void SaveEvents_AfterLoad(object sender, System.EventArgs e)
 		{
-			MenuManager.Initialize();
+            Configs.LoadConfigs();
+            MenuManager.Initialize();
             MenuManager.InitializeCompatibilityFixes();
 
         }

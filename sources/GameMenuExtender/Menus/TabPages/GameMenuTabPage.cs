@@ -24,7 +24,20 @@ namespace GameMenuExtender.Menus
 
         //public int VisibleIndex => Visible ? Tab.TabPages.Where(t => t.Visible).ToList().IndexOf(this) : -1;
 
+        public int DisplayIndex
+        {
+            get => IsVanilla ? Tab.Config.VanillaPageIndex : (this as CustomTabPage).Config.Index;
+            set
+            {
+                if (IsVanilla)
+                    Tab.Config.VanillaPageIndex = value;
+                else
+                    (this as CustomTabPage).Config.Index = value;
+            }
+        }
+
 		public CreateMenuPageParams GameWindowOffset { get; protected set; }
+
 
 		internal GameMenuTabPage(GameMenuTab tab, string name) : base(tab.Manager, name)
         {
@@ -73,7 +86,14 @@ namespace GameMenuExtender.Menus
                 PageWindow.initialize(finalBounds.X, finalBounds.Y, finalBounds.Width, finalBounds.Height, PageWindow.upperRightCloseButton != null);
             else
 			{
-				PageWindow = Manager.CreatePageInstance(PageType, IsVanilla ? finalBounds : menuBounds);
+                var oldPage = PageWindow;
+
+                PageWindow = Manager.CreatePageInstance(PageType, IsVanilla ? finalBounds : menuBounds);
+
+                if(PageWindow == null && oldPage != null)
+                {
+                    PageWindow = oldPage;
+                }
 			}
         }
 	}

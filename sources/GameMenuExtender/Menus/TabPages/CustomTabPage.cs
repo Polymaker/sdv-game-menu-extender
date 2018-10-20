@@ -1,4 +1,5 @@
-﻿using StardewModdingAPI;
+﻿using GameMenuExtender.Config;
+using StardewModdingAPI;
 using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
@@ -14,11 +15,18 @@ namespace GameMenuExtender.Menus
 
 		public bool IsNonAPI { get; internal set; }
 
-		public CustomTabPage(GameMenuTab tab, IManifest mod, string name, string label, Type pageClass) : base(tab, name)
+        public GameMenuTabPageConfig Config { get; private set; }
+
+        public CustomTabPage(GameMenuTab tab, IManifest mod, string name, string label, Type pageClass) : base(tab, name)
 		{
 			PageType = pageClass;
 			SourceMod = mod;
             Label = label;
 		}
+
+        public void LoadConfig()
+        {
+            Config = Manager.Mod.Configs.LoadOrCreateConfig(this);
+        }
     }
 }

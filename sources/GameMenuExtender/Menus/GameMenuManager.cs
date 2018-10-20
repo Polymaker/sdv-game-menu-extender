@@ -188,7 +188,7 @@ namespace GameMenuExtender.Menus
 				if (CurrentTabOverride != null)
 					ReturnToVanillaTab();
 				CurrentTabIndex = ActiveGameMenu.currentTab;
-				CurrentTabReal.SelectFirstPage();
+				CurrentTabReal.SelectDefaultPage();
 				CurrentTabReal.InitializeLayout();
                 OnCurrentTabPageChanged();
             }
@@ -214,8 +214,13 @@ namespace GameMenuExtender.Menus
                     var tabPage = new VanillaTabPage(menuTab, vanillaPages[i]);
 					tabPage.CalculateGameMenuOffset(gameMenu);
 					VanillaTabs.Add(menuTab);
-				}
+                    menuTab.LoadConfig();
+                    tabPage.Visible = menuTab.Config.VanillaPageVisible;
+                }
             }
+
+            if (Mod.Configs.AllConfigs.Any(c => c.HasChanged))
+                Mod.Configs.SaveConfigs();
         }
 
         /// <summary>
@@ -229,7 +234,8 @@ namespace GameMenuExtender.Menus
 			CurrentTabIndex = ActiveGameMenu.currentTab;
 
 			GameWindowBounds = new CreateMenuPageParams { X = ActiveGameMenu.xPositionOnScreen, Y = ActiveGameMenu.yPositionOnScreen, Width = ActiveGameMenu.width, Height = ActiveGameMenu.height };
-            JuminoIconDefaultBounds = ActiveGameMenu.junimoNoteIcon.bounds;
+            if (ActiveGameMenu.junimoNoteIcon != null)
+                JuminoIconDefaultBounds = ActiveGameMenu.junimoNoteIcon.bounds;
 
             //Override pages
             var currentTabs = Helper.Reflection.GetField<List<ClickableComponent>>(ActiveGameMenu, "tabs").GetValue();
@@ -266,11 +272,19 @@ namespace GameMenuExtender.Menus
                         {
 							Monitor.Log($"The tab page '{currentTab.Name}' is overrided by another mod ({customPageMod.Name})", LogLevel.Info);
                             customTabPage = RegisterTabPageExtension(customPageMod, currentTab.Name, currentTab.Name, customPageMod.Name, currentPage.GetType(), false);
-							customTabPage.CalculateGameMenuOffset(ActiveGameMenu);
-						}
-
-                        if (customTabPage != null)
                             customTabPage.PageWindow = currentPage;
+                            customTabPage.CalculateGameMenuOffset(ActiveGameMenu);
+
+                            if (customTabPage.Tab.TabPages.Count(p => p.IsCustom && p.Visible) == 1 && customTabPage.Visible && customTabPage.Config.IsNew)
+                            {
+                                currentTab.Config.DefaultPage = customTabPage.Name;
+                                currentTab.Config.VanillaPageVisible = false;
+                                Mod.Configs.SaveConfigs();
+                            }
+						}
+                        else
+                            customTabPage.PageWindow = currentPage;
+
 					}
 					else
 					{
@@ -315,17 +329,21 @@ namespace GameMenuExtender.Menus
                     optionsPage.currentItemIndex = SelectedOptionFix;
 			}
 
+            ValidateTabConfigs();
+
             RebuildCustomTabButtons();
 
             foreach (var tab in AllTabs)
 			{
-				tab.SelectFirstPage();
+				tab.SelectDefaultPage();
 				if (tab.IsVanilla)
 					(tab as VanillaTab).InitializeLayout();
 			}
 
 			IsGameMenuExtended = true;
 		}
+
+        
 
 		#region Tab Handling
 
@@ -357,7 +375,7 @@ namespace GameMenuExtender.Menus
 
 			CurrentTabIndex = CurrentTabReal.TabIndex;
 
-			newTab.SelectFirstPage();
+			newTab.SelectDefaultPage();
 			CurrentTabReal.RebuildLayoutForCurrentTab();
 			ChangingTab = false;
 
@@ -380,6 +398,64 @@ namespace GameMenuExtender.Menus
             CurrentTabPageChanged?.Invoke(null, EventArgs.Empty);
         }
 
+        private void ValidateTabConfigs()
+        {
+            bool isWaitingForMapToLoad = false;
+
+            foreach (var tab in AllTabs)
+            {
+                if (!tab.TabPages.Any(p => p.NameEquals(tab.Config.DefaultPage)))
+                {
+                    if(tab.TabName == GameMenuTabs.Map)
+                    {
+                        var config = Mod.Configs.TabPagesConfigs.FirstOrDefault(c => tab.NameEquals(c.TabName) && c.Name.ToLower() == tab.Config.DefaultPage.ToLower());
+                        if (config != null && config.IsNonAPI)
+                        {
+                            var modName = config.Name.Split(':')[0];
+                            if (Helper.ModRegistry.IsLoaded(modName))
+                            {
+                                isWaitingForMapToLoad = true;
+                                continue;
+                            }
+                        }
+                    }
+
+                    if (tab is VanillaTab vtab)
+                        tab.Config.DefaultPage = vtab.VanillaPage.Name;
+                    else
+                        tab.Config.DefaultPage = tab.TabPages.OrderByDescending(p => p.Visible).FirstOrDefault()?.Name;
+                }
+
+                var defaultPage = tab.TabPages.FirstOrDefault(p => p.NameEquals(tab.Config.DefaultPage));
+                if (defaultPage != null && !defaultPage.Visible)
+                    defaultPage.Visible = true;
+            }
+
+            foreach(var tab in VanillaTabs)
+            {
+                if (!tab.Config.VanillaPageVisible 
+                    && (!tab.TabPages.Any(p=> !p.IsVanilla && p.Visible) || tab.VanillaPage.NameEquals(tab.Config.DefaultPage)))
+                {
+                    if (tab.TabName != GameMenuTabs.Map || !isWaitingForMapToLoad)
+                        tab.Config.VanillaPageVisible = true;
+                }
+
+                tab.VanillaPage.Visible = tab.Config.VanillaPageVisible;
+                tab.TabButton.label = tab.Label;
+                tab.VanillaPage.Label = tab.Config.VanillaPageTitle;
+            }
+
+            int curIndex = 0;
+            foreach (var tab in CustomTabs.OrderBy(t => t.Config.Index))
+                tab.Config.Index = curIndex++;
+
+            foreach (var tab in AllTabs)
+                tab.OrganizeTabPages();
+
+            if (Mod.Configs.AllConfigs.Any(c => c.HasChanged))
+                Mod.Configs.SaveConfigs();
+        }
+
         #endregion
 
         private void RebuildCustomTabButtons()
@@ -388,7 +464,7 @@ namespace GameMenuExtender.Menus
             int currentX = lastTabButton.bounds.Right;
             int currentY = lastTabButton.bounds.Top;
 
-            foreach (var tab in CustomTabs)
+            foreach (var tab in CustomTabs.OrderBy(t => t.DisplayIndex))
             {
                 if (tab.Visible)
                 {
@@ -412,7 +488,7 @@ namespace GameMenuExtender.Menus
             //b.End();
             //b.Begin(SpriteSortMode.FrontToBack, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null);
 
-            foreach (var tab in CustomTabs)
+            foreach (var tab in CustomTabs.OrderBy(t => t.DisplayIndex))
             {
                 if (tab.Visible && tab.TabButton != null)
                 {
@@ -459,6 +535,10 @@ namespace GameMenuExtender.Menus
                     newPage.initialize(ctorParams.X, ctorParams.Y, ctorParams.Width, ctorParams.Height, ctorParams.UpperRightCloseButton);
                     return newPage;
                 }
+                else
+                {
+                    Monitor.Log($"[CreatePageInstance] No constructor found for page of type {pageType?.Name ?? "null"}", LogLevel.Error);
+                }
             }
             catch (Exception ex)
             {
@@ -496,6 +576,8 @@ namespace GameMenuExtender.Menus
                 return null;
             }
 
+            newTab.LoadConfig();
+
             return newTab;
         }
 
@@ -517,7 +599,11 @@ namespace GameMenuExtender.Menus
                 return null;
             }
 
-			return new CustomTabPage(foundTab, source, uniqueName, pageLabel, pageMenuClass) { IsNonAPI = !byAPI };
+            var newTabPage = new CustomTabPage(foundTab, source, uniqueName, pageLabel, pageMenuClass) { IsNonAPI = !byAPI };
+
+            newTabPage.LoadConfig();
+
+            return newTabPage;
         }
 
         #endregion

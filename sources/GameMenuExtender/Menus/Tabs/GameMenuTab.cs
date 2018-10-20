@@ -1,4 +1,5 @@
-﻿using StardewValley.Menus;
+﻿using GameMenuExtender.Config;
+using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,8 @@ namespace GameMenuExtender.Menus
 
         MenuPageTabsLocation PageTabsLocation { get; set; }
 
+        public abstract GameMenuTabs TabName { get; }
+
         public IList<GameMenuTabPage> TabPages
         {
             get { return _TabPages.AsReadOnly(); }
@@ -27,6 +30,8 @@ namespace GameMenuExtender.Menus
 		internal int CurrentTabPageIndex;
 
         public GameMenuTabPage CurrentTabPage => (CurrentTabPageIndex >= 0 && CurrentTabPageIndex < TabPages.Count) ? TabPages[CurrentTabPageIndex] : null;
+
+        public GameMenuTabConfig Config { get; private set; }
 
         internal GameMenuTab(GameMenuManager manager, string name) : base(manager, name)
         {
@@ -55,6 +60,20 @@ namespace GameMenuExtender.Menus
 			}
 		}
 
+        internal void SelectDefaultPage()
+        {
+            CurrentTabPageIndex = 0;
+
+            for (int i = 0; i < TabPages.Count; i++)
+            {
+                if (TabPages[i].NameEquals(Config.DefaultPage))
+                {
+                    CurrentTabPageIndex = i;
+                    break;
+                }
+            }
+        }
+
         public void SelectTabPage(GameMenuTabPage page)
         {
             SelectTabPage(TabPages.IndexOf(page));
@@ -69,6 +88,24 @@ namespace GameMenuExtender.Menus
                 Manager.CurrentTabReal.RebuildLayoutForCurrentTab();
                 Manager.OnCurrentTabPageChanged();
             }
+        }
+
+        public void LoadConfig()
+        {
+            Config = Manager.Mod.Configs.LoadOrCreateConfig(this);
+            Label = Config.Title;
+        }
+
+        public void OrganizeTabPages()
+        {
+            int currentIndex = 0;
+
+            foreach(var page in TabPages.OrderByDescending(p => p.NameEquals(Config.DefaultPage)).ThenBy(p => p.DisplayIndex))
+            {
+                page.DisplayIndex = currentIndex++;
+            }
+
+            _TabPages = _TabPages.OrderBy(p => p.DisplayIndex).ToList();
         }
 	}
 }

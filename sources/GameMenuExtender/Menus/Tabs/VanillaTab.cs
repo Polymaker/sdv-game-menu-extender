@@ -19,7 +19,7 @@ namespace GameMenuExtender.Menus
 
 		public bool IsTabButtonOffseted { get; private set; }
 
-        public GameMenuTabs TabName => (GameMenuTabs)TabIndex;
+        public override GameMenuTabs TabName => (GameMenuTabs)TabIndex;
 
         public VanillaTabPage VanillaPage => TabPages.OfType<VanillaTabPage>().FirstOrDefault();
 

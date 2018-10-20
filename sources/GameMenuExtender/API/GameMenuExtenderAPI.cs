@@ -64,6 +64,9 @@ namespace GameMenuExtender.API
                 else
                     MenuManager.RegisterTabPageExtension(entry.Source, entry.TabName, entry.PageName, entry.Label, entry.PageMenuClass);
 			}
+
+            if (Mod.Configs.AllConfigs.Any(c => c.HasChanged))
+                Mod.Configs.SaveConfigs();
         }
 
         public void RegisterCustomTabPage(string tabName, string label, Type pageMenuClass)
@@ -87,6 +90,7 @@ namespace GameMenuExtender.API
             }
 
             Mod.MenuManager.RegisterCustomTabPage(sourceMod, tabName, label, pageMenuClass);
+            Mod.Configs.SaveConfigs();
         }
 
         public void RegisterTabPageExtension(string tabName, string pageName, string pageLabel, Type pageMenuClass)
@@ -112,6 +116,7 @@ namespace GameMenuExtender.API
             }
 
             Mod.MenuManager.RegisterTabPageExtension(sourceMod, tabName, pageName, pageLabel, pageMenuClass);
+            Mod.Configs.SaveConfigs();
         }
 
         private bool ValidateParameters(Type pageMenuClass, out IManifest sourceMod)
