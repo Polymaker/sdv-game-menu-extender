@@ -429,26 +429,29 @@ namespace GameMenuExtender.Menus
 
         private void ValidateTabConfigs()
         {
-            bool isWaitingForMapToLoad = false;
+            var pendingNonApiPages = new List<GameMenuTabs>();
 
+            //ENSURE THAT THE CONFIGURED DEFAULT PAGE EXISTS
             foreach (var tab in AllTabs)
             {
                 if (!tab.TabPages.Any(p => p.NameEquals(tab.Configuration.DefaultPage)))
                 {
-                    if(tab.TabName == GameMenuTabs.Map)
+                    if(tab.IsVanilla)
                     {
-                        var config = Mod.Configs.TabPagesConfigs.FirstOrDefault(c => tab.NameEquals(c.TabName) && c.Name.ToLower() == tab.Configuration.DefaultPage.ToLower());
-                        if (config != null && config.IsNonAPI)
+                        var existingConfig = Mod.Configs.TabPagesConfigs.FirstOrDefault(c => tab.NameEquals(c.TabName) && c.Name.ToLower() == tab.Configuration.DefaultPage.ToLower());
+
+                        if (existingConfig != null && existingConfig.IsNonAPI)
                         {
-                            var modName = config.Name.Split(':')[0];
+                            var modName = existingConfig.Name.Split(':')[0];
+
                             if (Helper.ModRegistry.IsLoaded(modName))
                             {
-                                isWaitingForMapToLoad = true;
+                                pendingNonApiPages.Add(tab.TabName);
                                 continue;
                             }
                         }
                     }
-
+                    
                     if (tab is VanillaTab vtab)
                         tab.Configuration.DefaultPage = vtab.VanillaPage.Name;
                     else
@@ -460,24 +463,28 @@ namespace GameMenuExtender.Menus
                     defaultPage.Visible = true;
             }
 
-            foreach(var tab in VanillaTabs)
+            //ENSURE THAT THE VANILLA PAGE IS VISIBLE IF THERE IS NO OTHER VISIBLE (OR LOADED) PAGES
+            foreach (var tab in VanillaTabs)
             {
-                if (!tab.Configuration.PageVisible 
-                    && (!tab.TabPages.Any(p=> !p.IsVanilla && p.Visible) || tab.VanillaPage.NameEquals(tab.Configuration.DefaultPage)))
+                if (!tab.Configuration.PageVisible)
                 {
-                    if (tab.TabName != GameMenuTabs.Map || !isWaitingForMapToLoad)
+                    if((!tab.TabPages.Any(p => !p.IsVanilla && p.Visible) && !pendingNonApiPages.Contains(tab.TabName)) || tab.VanillaPage.NameEquals(tab.Configuration.DefaultPage))
                         tab.Configuration.PageVisible = true;
                 }
-
+                
                 tab.VanillaPage.Visible = tab.Configuration.PageVisible;
+
+                //Sets the tab's and page's label
                 tab.TabButton.label = tab.Label;
                 tab.VanillaPage.Label = tab.Configuration.PageTitle;
             }
 
+            //UPDATES AND CORRECTS THE TABS ORDER
             int curIndex = 0;
             foreach (var tab in CustomTabs.OrderBy(t => t.Configuration.Index))
                 tab.Configuration.Index = curIndex++;
 
+            //UPDATES AND CORRECTS THE TAB'S PAGES ORDER
             foreach (var tab in AllTabs)
                 tab.OrganizeTabPages();
 

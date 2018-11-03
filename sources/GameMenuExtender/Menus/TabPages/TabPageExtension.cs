@@ -8,5 +8,6 @@ namespace GameMenuExtender.Menus.TabPages
 {
     public class TabPageExtension
     {
+
     }
 }
