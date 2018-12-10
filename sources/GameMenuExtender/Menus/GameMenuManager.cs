@@ -70,8 +70,7 @@ namespace GameMenuExtender.Menus
             GameMenuTabList = new List<ClickableComponent>();
             GameMenuPageList = new List<IClickableMenu>();
 
-            MenuEvents.MenuChanged += MenuEvents_MenuChanged;
-			MenuEvents.MenuClosed += MenuEvents_MenuClosed;
+            Helper.Events.Display.MenuChanged += MenuEvents_MenuChanged;
         }
 
 		#region Game Menu Events Management
@@ -79,7 +78,7 @@ namespace GameMenuExtender.Menus
 		private bool WaitingForGameMenu;
 		private int SelectedOptionFix = -1;
 
-		private void MenuEvents_MenuChanged(object sender, EventArgsClickableMenuChanged e)
+		private void MenuEvents_MenuChanged(object sender, MenuChangedEventArgs e)
 		{
             //Monitor.Log($"Menu Changing to {(e.NewMenu != null ? e.NewMenu.GetType().Name : "null")}");
 
@@ -94,47 +93,49 @@ namespace GameMenuExtender.Menus
 					SelectedOptionFix = -1;
 
 				WaitingForGameMenu = true;
-				GameEvents.SecondUpdateTick += MenuEvents_AfterMenuChanged;
-			}
-		}
-
-		private void MenuEvents_AfterMenuChanged(object sender, EventArgs e)
-		{
-			WaitingForGameMenu = false;
-			GameEvents.SecondUpdateTick -= MenuEvents_AfterMenuChanged;
-			GameEvents.UpdateTick += GameEvents_UpdateTick;
-
-			if(Game1.activeClickableMenu is GameMenu)
-			{
-				if (ActiveGameMenu != null)
-				{
-					if (ActiveGameMenu == Game1.activeClickableMenu)
-						return;
-					OnGameMenuClosed();
-				}
-				ActiveGameMenu = (GameMenu)Game1.activeClickableMenu;
-				OnGameMenuOpened();
-			}
-		}
-
-		private void MenuEvents_MenuClosed(object sender, EventArgsClickableMenuClosed e)
-		{
-			if (e.PriorMenu is GameMenu)
-			{
-				GameEvents.UpdateTick -= GameEvents_UpdateTick;
-				OnGameMenuClosed();
+                Helper.Events.GameLoop.UpdateTicked += GameEvents_UpdateTick;
+            }
+            else if(e.NewMenu == null && e.OldMenu is GameMenu)
+            {
+                OnGameMenuClosed();
+                Helper.Events.GameLoop.UpdateTicked -= GameEvents_UpdateTick;
             }
 		}
 
-		private void GameEvents_UpdateTick(object sender, EventArgs e)
+		private void GameEvents_UpdateTick(object sender, UpdateTickedEventArgs e)
 		{
-			if (!IsGameMenuOpen)
-			{
-				GameEvents.UpdateTick -= GameEvents_UpdateTick;
-				return;
-			}
-			if (IsGameMenuExtended)
-				OnGameMenuUpdate();
+            if (WaitingForGameMenu)
+            {
+                if (e.IsMultipleOf(2))
+                {
+                    WaitingForGameMenu = false;
+                    if (Game1.activeClickableMenu is GameMenu)
+                    {
+                        if (ActiveGameMenu != null)
+                        {
+                            if (ActiveGameMenu == Game1.activeClickableMenu)
+                                return;
+                            OnGameMenuClosed();
+                        }
+                        ActiveGameMenu = (GameMenu)Game1.activeClickableMenu;
+                        OnGameMenuOpened();
+                    }
+                }
+            }
+            else if(!WaitingForGameMenu && IsGameMenuExtended)
+            {
+                if (!IsGameMenuOpen)
+                {
+                    Helper.Events.GameLoop.UpdateTicked -= GameEvents_UpdateTick;
+                    return;
+                }
+                if (IsGameMenuExtended)
+                    OnGameMenuUpdate();
+            }
+            else if (!IsGameMenuOpen)
+            {
+                Helper.Events.GameLoop.UpdateTicked -= GameEvents_UpdateTick;
+            }
 		}
 
 		#endregion
@@ -154,7 +155,7 @@ namespace GameMenuExtender.Menus
             var patchClasses = typeof(GameMenuManager).Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(CompatibilityPatch)) && t != typeof(CompatibilityPatch)).ToList();
             foreach(var patchClass in patchClasses)
             {
-                if(!CompatibilityPatches.Any(p=>p.GetType() == patchClass))
+                if (!CompatibilityPatches.Any(p => p.GetType() == patchClass))
                 {
                     var patch = (CompatibilityPatch)Activator.CreateInstance(patchClass, this);
                     if (patch.IsAppliable() && patch.InitializePatch())

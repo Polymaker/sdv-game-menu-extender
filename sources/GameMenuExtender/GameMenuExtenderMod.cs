@@ -21,11 +21,10 @@ namespace GameMenuExtender
             MenuManager = new GameMenuManager(this);
             ApiInstance = new GameMenuExtenderAPI(this);
             Configs = new ConfigManager(this);
-
-            SaveEvents.AfterLoad += SaveEvents_AfterLoad;
+            Helper.Events.GameLoop.SaveLoaded += SaveEvents_AfterLoad;
 		}
 
-		private void SaveEvents_AfterLoad(object sender, System.EventArgs e)
+		private void SaveEvents_AfterLoad(object sender, SaveLoadedEventArgs e)
 		{
             Configs.LoadConfigs();
             MenuManager.Initialize();

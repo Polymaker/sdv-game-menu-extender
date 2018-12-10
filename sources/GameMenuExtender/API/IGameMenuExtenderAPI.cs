@@ -12,7 +12,7 @@ namespace GameMenuExtender.API
         event EventHandler CurrentTabPageChanged;
 
         /// <summary>
-        /// Registers a custom tab in the game menu.
+        /// Registers a custom tab (and page) in the game menu.
         /// </summary>
         /// <param name="tabName">The tab's identifier.</param>
         /// <param name="label">The tab's tooltip text and the tab's main page label.</param>

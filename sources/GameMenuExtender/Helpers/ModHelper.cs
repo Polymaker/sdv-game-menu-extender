@@ -14,7 +14,8 @@ namespace GameMenuExtender
 		static FieldInfo RegistryField;
 		static Type ModRegistryType;
 		static Type IModMetadataType;
-		static PropertyInfo IModMetadataManifestProperty;
+        //static Type IModInfoType;
+        static PropertyInfo IModInfoManifestProperty;
         static PropertyInfo IModMetadataModProperty;
         static FieldInfo ModMetadataDictionaryField;
 		static MethodInfo ContainsKeyMethod;
@@ -27,8 +28,9 @@ namespace GameMenuExtender
 			RegistryField = modRegistryHelperType.GetField("Registry", BindingFlags.Instance | BindingFlags.NonPublic);
 			ModRegistryType = RegistryField.FieldType;
 			GetModMethod = ModRegistryType.GetMethod("Get");
-			IModMetadataType = typeof(IModRegistry).Assembly.GetType("StardewModdingAPI.Framework.IModMetadata");
-			IModMetadataManifestProperty = IModMetadataType.GetProperty("Manifest");
+			//IModInfoType = typeof(IModRegistry).Assembly.GetType("StardewModdingAPI.Framework.IModInfo");
+            IModMetadataType = typeof(IModRegistry).Assembly.GetType("StardewModdingAPI.Framework.IModMetadata");
+            IModInfoManifestProperty = typeof(IModInfo).GetProperty("Manifest");
             IModMetadataModProperty = IModMetadataType.GetProperty("Mod");
             var modMetadataDictionaryType = typeof(IDictionary<,>).MakeGenericType(typeof(string), IModMetadataType);
 			ContainsKeyMethod = modMetadataDictionaryType.GetMethod("ContainsKey");
@@ -61,7 +63,7 @@ namespace GameMenuExtender
 						var modMetadata = ItemProperty.GetValue(modDictionary, new object[] { assemblyName });
 						if (modMetadata != null)
 						{
-							return IModMetadataManifestProperty.GetValue(modMetadata) as IManifest;
+							return IModInfoManifestProperty.GetValue(modMetadata) as IManifest;
 						}
 					}
 				}
@@ -82,7 +84,7 @@ namespace GameMenuExtender
 				var modMetadata = ItemProperty.GetValue(modDictionary, new object[] { type.Assembly.FullName });
 				if (modMetadata != null)
 				{
-					return IModMetadataManifestProperty.GetValue(modMetadata) as IManifest;
+					return IModInfoManifestProperty.GetValue(modMetadata) as IManifest;
 				}
 			}
 			return null;
