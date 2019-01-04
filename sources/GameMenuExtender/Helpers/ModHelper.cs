@@ -61,7 +61,8 @@ namespace GameMenuExtender
 						var modMetadata = ItemProperty.GetValue(modDictionary, new object[] { assemblyName });
 						if (modMetadata != null)
 						{
-							return IModMetadataManifestProperty.GetValue(modMetadata) as IManifest;
+                            var modInfo = IModMetadataModProperty.GetValue(modMetadata) as IMod;
+                            return modInfo.ModManifest;
 						}
 					}
 				}
@@ -82,7 +83,8 @@ namespace GameMenuExtender
 				var modMetadata = ItemProperty.GetValue(modDictionary, new object[] { type.Assembly.FullName });
 				if (modMetadata != null)
 				{
-					return IModMetadataManifestProperty.GetValue(modMetadata) as IManifest;
+                    var modInfo = IModMetadataModProperty.GetValue(modMetadata) as IMod;
+                    return modInfo.ModManifest;
 				}
 			}
 			return null;
