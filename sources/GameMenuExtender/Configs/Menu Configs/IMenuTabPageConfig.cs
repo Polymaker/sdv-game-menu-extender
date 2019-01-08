@@ -15,6 +15,7 @@ namespace GameMenuExtender.Configs
         string Title { get; set; }
         string DefaultTitle { get; set; }
         bool IsVanilla { get; }
+        bool IsCustom { get; }
         bool IsNew { get; }
     }
 }

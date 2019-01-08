@@ -18,11 +18,13 @@ namespace GameMenuExtender.Configs
 
         public int Index { get => _Tab.PageIndex; set => _Tab.PageIndex = value; }
 
-        public string Title { get => _Tab.PageTitle; set => _Tab.PageTitle = value; }
+        public string Title { get => string.IsNullOrEmpty(_Tab.PageTitle) ? DefaultTitle : _Tab.PageTitle; set => _Tab.PageTitle = value; }
 
         public string DefaultTitle { get => _Tab.DefaultPageTitle; set => _Tab.DefaultPageTitle = value; }
 
         public bool IsVanilla => true;
+
+        public bool IsCustom => false;
 
         public bool IsNew => false;
 

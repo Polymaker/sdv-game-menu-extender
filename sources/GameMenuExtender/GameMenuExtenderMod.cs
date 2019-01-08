@@ -16,13 +16,16 @@ namespace GameMenuExtender
 		internal GameMenuExtenderAPI ApiInstance;
         internal ConfigManager Configs { get; private set; }
 
+        internal static GameMenuExtenderMod Instance { get; private set; }
+
         public override void Entry(IModHelper helper)
 		{
             MenuManager = new GameMenuManager(this);
             ApiInstance = new GameMenuExtenderAPI(this);
             Configs = new ConfigManager(this);
             Helper.Events.GameLoop.SaveLoaded += SaveEvents_AfterLoad;
-		}
+            Instance = this;
+        }
 
 		private void SaveEvents_AfterLoad(object sender, SaveLoadedEventArgs e)
 		{

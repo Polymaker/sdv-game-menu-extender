@@ -16,6 +16,7 @@ namespace GameMenuExtender.Configs
 
         public string TabName { get; private set; }
         public string Name { get; private set; }
+        public string ModID => Name.Split(':')[0];
         public bool Visible { get => _Visible; set => SetPropertyValue(ref _Visible, value); }
         public string Title { get => string.IsNullOrEmpty(_Title) ? DefaultTitle  : _Title; set => SetPropertyValue(ref _Title, value); }
         public int Index { get => _Index; set => SetPropertyValue(ref _Index, value); }
@@ -24,6 +25,8 @@ namespace GameMenuExtender.Configs
         public bool IsNonAPI { get => _IsNonAPI; set { _Visible = value; OnPropertyChanged(nameof(IsNonAPI)); } }
 
         public bool IsVanilla => false;
+
+        public bool IsCustom => true;   
 
         public CustomTabPageConfig(GameMenuTabPage tabPage)
         {

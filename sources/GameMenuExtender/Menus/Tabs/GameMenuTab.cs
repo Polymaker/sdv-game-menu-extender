@@ -31,14 +31,28 @@ namespace GameMenuExtender.Menus
 
         public GameMenuTabPage CurrentTabPage => (CurrentTabPageIndex >= 0 && CurrentTabPageIndex < TabPages.Count) ? TabPages[CurrentTabPageIndex] : null;
 
+        public bool TabPageInitialized => CurrentTabPage != null && CurrentTabPage.Visible;
+
         //public GameMenuTabConfig Config { get; private set; }
 
         public IMenuTabConfig Configuration { get; private set; }
+
+        public override bool Visible
+        {
+            get => Configuration?.Visible ?? base.Visible;
+            set
+            {
+                if (Configuration != null)
+                    Configuration.Visible = value;
+                base.Visible = value;
+            }
+        }
 
         internal GameMenuTab(GameMenuManager manager, string name) : base(manager, name)
         {
             _TabPages = new List<GameMenuTabPage>();
             UniqueID = name;
+            CurrentTabPageIndex = -1;
         }
 
         public void AddTabPage(GameMenuTabPage page)

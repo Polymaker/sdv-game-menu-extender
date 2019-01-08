@@ -33,7 +33,18 @@ namespace GameMenuExtender.Menus
 
 		public CreateMenuPageParams GameWindowOffset { get; protected set; }
 
-		internal GameMenuTabPage(GameMenuTab tab, string name) : base(tab.Manager, name)
+        public override bool Visible
+        {
+            get => Configuration?.Visible ?? base.Visible;
+            set
+            {
+                if (Configuration != null)
+                    Configuration.Visible = value;
+                base.Visible = value;
+            }
+        }
+
+        internal GameMenuTabPage(GameMenuTab tab, string name) : base(tab.Manager, name)
         {
             Tab = tab;
             Tab.AddTabPage(this);

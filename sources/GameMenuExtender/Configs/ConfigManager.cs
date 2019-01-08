@@ -100,6 +100,15 @@ namespace GameMenuExtender.Configs
             return TabPagesConfigs.Where(c => c.TabName.ToLower() == tab.Name.ToLower()).ToList();
         }
 
+        public List<IMenuTabPageConfig> GetTabPagesConfig(IMenuTabConfig tabConfig)
+        {
+            var allPages = TabPagesConfigs.Where(c => c.TabName == tabConfig.Name).OfType<IMenuTabPageConfig>().ToList();
+            if (tabConfig is VanillaTabConfig vanillaTab)
+                allPages.Add(new VanillaTabPageConfig(vanillaTab));
+            
+            return allPages.OrderBy(p => p.Index).ToList();
+        }
+
         public GameMenuTabConfig LoadOrCreateConfig(GameMenuTab tab)
         {
             GameMenuTabConfig tabConfig = null;
@@ -162,5 +171,28 @@ namespace GameMenuExtender.Configs
             return tabPageConfig;
         }
 
+
+        public void PurgeRemovedMods()
+        {
+            for (int i = TabPagesConfigs.Count - 1; i >= 0; i--)
+            {
+                var pageConfig = TabPagesConfigs[i];
+                if (!Mod.Helper.ModRegistry.IsLoaded(pageConfig.ModID))
+                {
+                    TabPagesConfigs.Remove(pageConfig);
+                }
+            }
+            for (int i = TabConfigs.Count - 1; i >= 0; i--)
+            {
+                var tabConfig = TabConfigs[i] as CustomTabConfig;
+                if (tabConfig != null && !Mod.Helper.ModRegistry.IsLoaded(tabConfig.ModID))
+                {
+                    TabConfigs.Remove(tabConfig);
+                }
+            }
+
+            if (AllConfigs.Any(c => c.HasChanged))
+                SaveConfigs();
+        }
     }
 }

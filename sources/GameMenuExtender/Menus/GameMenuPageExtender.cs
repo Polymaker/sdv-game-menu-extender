@@ -48,8 +48,8 @@ namespace GameMenuExtender.Menus
 			int currentPosY = yPositionOnScreen + LeftSideStartOffsetY;
             int maxLabelWidth = 0;
 
-			foreach(var tabPage in tab.TabPages)
-			{
+            foreach (var tabPage in tab.TabPages.OrderBy(p => p.DisplayIndex))
+            {
 				if (tabPage.Visible)
 				{
 					var labelSize = Game1.smallFont.MeasureString(tabPage.Label);

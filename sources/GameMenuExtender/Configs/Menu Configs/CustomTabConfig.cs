@@ -22,11 +22,13 @@ namespace GameMenuExtender.Configs
         public override string DefaultPageTitle { get { return null; } set { } }
         public override bool PageVisible { get { return false; } set { } }
         public override int PageIndex { get { return -1; } set { } }
+        public string ModID => Name.Split(':')[0];
 
         public CustomTabConfig(GameMenuExtenderConfig.CustomTabConfig tabConfig)
             : base(tabConfig)
         {
             _Index = tabConfig.Index;
+            _Visible = tabConfig.Visible;
         }
 
         public CustomTabConfig(CustomTab tab)

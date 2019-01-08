@@ -70,5 +70,10 @@ namespace GameMenuExtender.Menus
         {
             return Name.Trim().Equals(name?.Trim(), StringComparison.InvariantCultureIgnoreCase);
         }
-	}
+
+        public static bool NameEquals(string name1, string name2)
+        {
+            return name1.Trim().Equals(name2?.Trim(), StringComparison.InvariantCultureIgnoreCase);
+        }
+    }
 }

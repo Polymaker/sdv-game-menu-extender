@@ -31,6 +31,8 @@ namespace GameMenuExtender.Configs
         public abstract bool PageVisible { get; set; }
         public abstract int PageIndex { get; set; }
 
+        public List<IMenuTabPageConfig> TabPages { get; set;  }
+
         protected GameMenuTabConfig(string name)
         {
             Name = name;
@@ -43,6 +45,7 @@ namespace GameMenuExtender.Configs
             Name = vtc?.Name.ToString() ?? ctc.Name;
             _Title = config.Title;
             _DefaultPage = config.DefaultPage;
+            TabPages = new List<IMenuTabPageConfig>();
             IsNew = false;
         }
 
@@ -52,6 +55,7 @@ namespace GameMenuExtender.Configs
             _Title = tab.Label;
             _DefaultPage = tab.TabPages.FirstOrDefault()?.Name;
             DefaultTitle = tab.Label;
+            TabPages = new List<IMenuTabPageConfig>();
             IsNew = true;
         }
 

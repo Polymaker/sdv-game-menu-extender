@@ -53,6 +53,9 @@
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="Polymaker.SdvUI">
+      <HintPath>..\..\..\sdv-gui-library\sources\Polymaker.SdvUI\bin\x86\Debug\Polymaker.SdvUI.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -98,6 +101,9 @@
     <Compile Include="Menus\TabPages\VanillaTabPage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Menus\MenuPageTabsLocation.cs" />
+    <Compile Include="UI\MenuExtenderConfigPage.cs" />
+    <Compile Include="UI\TabConfigControl.cs" />
+    <Compile Include="UI\TabPageConfigControl.cs" />
     <Compile Include="Utilities\ArrayProperty.cs" />
   </ItemGroup>
   <ItemGroup>
