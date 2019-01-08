@@ -75,6 +75,7 @@ namespace GameMenuExtender.UI
         private void VisibleCheckbox_CheckChanged(object sender, EventArgs e)
         {
             TabConfig.Visible = VisibleCheckbox.Checked;
+            PageControls.ForEach(c => c.Enabled = VisibleCheckbox.Checked);
         }
 
         public void RefreshInfo()
