@@ -14,6 +14,7 @@ namespace GameMenuExtender.UI
         private List<TabConfigControl> TabConfigControls;
 
         private SdvButton SaveButton;
+        private SdvButton ReloadButton;
 
         public MenuExtenderConfigPage()
         {
@@ -34,20 +35,28 @@ namespace GameMenuExtender.UI
                 Text = "Menu Extender Settings:",
                 X = GAME_MENU_BORDER + 8,
                 Y = GAME_MENU_BORDER + 8,
-                Font = Game1.dialogueFont
+                Font = new SdvFont(Game1.dialogueFont, false, true)
             };
             Controls.Add(mainLabel);
 
+            ReloadButton = new SdvButton() { Text = "Reload", Font = Game1.smallFont };
+            ReloadButton.X = ClientRectangle.Width - ReloadButton.Width - GAME_MENU_BORDER - 8;
+            ReloadButton.Y = GAME_MENU_BORDER + 8;
+            ReloadButton.Padding = new Polymaker.SdvUI.Padding(16, 4, 16, 4);
+            Controls.Add(ReloadButton);
+            ReloadButton.MouseClick += ReloadButton_MouseClick;
+
             SaveButton = new SdvButton() { Text = "Save", Font = Game1.smallFont };
-            SaveButton.X = Width - SaveButton.Width - Padding.Horizontal - GAME_MENU_BORDER - 8;
+            SaveButton.X = ReloadButton.X - SaveButton.Width - 16;
             SaveButton.Y = GAME_MENU_BORDER + 8;
-            SaveButton.MouseClick += SaveButton_MouseClick;
+            SaveButton.Padding = new Polymaker.SdvUI.Padding(16, 4, 16, 4);
             Controls.Add(SaveButton);
+            SaveButton.MouseClick += SaveButton_MouseClick;
 
             ConfigListPanel = new SdvScrollableControl()
             {
                 X = 16,
-                Y = SaveButton.Bounds.Bottom + 16,
+                Y = SaveButton.Bounds.Bottom + 8,
                 Width = Width - 32 - Padding.Horizontal,
                 Height = Height - GAME_MENU_BORDER - SaveButton.Bounds.Bottom - Padding.Vertical - 16
             };
@@ -56,6 +65,13 @@ namespace GameMenuExtender.UI
 
             Controls.Add(ConfigListPanel);
 
+            ReloadConfigs();
+        }
+
+        private void ReloadButton_MouseClick(object sender, Polymaker.SdvUI.MouseEventArgs e)
+        {
+            GameMenuExtenderMod.Instance.Configs.LoadConfigs();
+            GameMenuExtenderMod.Instance.MenuManager.ReloadMenu();
             ReloadConfigs();
         }
 
@@ -78,7 +94,7 @@ namespace GameMenuExtender.UI
                 var tabConfigCtrl = new TabConfigControl(tab)
                 {
                     Y = currentY,
-                    Width = ConfigListPanel.Width - ConfigListPanel.VScrollBar.Width
+                    Width = ConfigListPanel.ClientRectangle.Width - ConfigListPanel.VScrollBar.Width
                 };
                 ConfigListPanel.Controls.Add(tabConfigCtrl);
                 TabConfigControls.Add(tabConfigCtrl);

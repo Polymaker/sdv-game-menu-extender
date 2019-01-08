@@ -25,7 +25,12 @@ namespace GameMenuExtender.Menus
             get { return _TabPages.AsReadOnly(); }
         }
 
-		protected List<GameMenuTabPage> PageList => _TabPages;
+        public IEnumerable<GameMenuTabPage> VisibleTabPages
+        {
+            get { return _TabPages.Where(p => p.Visible); }
+        }
+
+        protected List<GameMenuTabPage> PageList => _TabPages;
 
 		internal int CurrentTabPageIndex;
 

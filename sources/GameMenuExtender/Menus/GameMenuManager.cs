@@ -158,7 +158,9 @@ namespace GameMenuExtender.Menus
                 foreach (var page in AllTabPages)
                     page.LoadConfig();
             }
-		}
+
+            ValidateTabConfigs();
+        }
 
         public void InitializeCompatibilityFixes()
         {
@@ -358,6 +360,9 @@ namespace GameMenuExtender.Menus
         internal void ReloadMenu()
         {
             var currentTabPage = CurrentTabPage;
+
+            Initialize();
+
             RebuildCustomTabButtons();
 
             foreach (var tab in AllTabs)
@@ -524,6 +529,7 @@ namespace GameMenuExtender.Menus
             int curIndex = 0;
             foreach (var tab in CustomTabs.OrderBy(t => t.Configuration.Index))
                 tab.Configuration.Index = curIndex++;
+
             //UPDATES AND CORRECTS THE TAB'S PAGES ORDER
             foreach (var tab in AllTabs)
                 tab.OrganizeTabPages();

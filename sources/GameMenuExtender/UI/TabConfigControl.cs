@@ -25,14 +25,18 @@ namespace GameMenuExtender.UI
             TabConfig = (GameMenuTabConfig)tab.Configuration;
 
             PageControls = new List<TabPageConfigControl>();
-            Padding = new Polymaker.SdvUI.Padding(2);
+            Padding = new Polymaker.SdvUI.Padding(8, 2, 0, 2);
         }
 
         protected override void OnInitialize()
         {
             base.OnInitialize();
 
-            TabNameLabel = new SdvLabel();
+            TabNameLabel = new SdvLabel()
+            {
+                Font = new SdvFont(StardewValley.Game1.smallFont, false, true)
+            };
+
             Controls.Add(TabNameLabel);
 
             VisibleCheckbox = new SdvCheckbox()
@@ -42,7 +46,7 @@ namespace GameMenuExtender.UI
                 Checked = TabConfig.Visible
             };
             VisibleCheckbox.CheckChanged += VisibleCheckbox_CheckChanged;
-            VisibleCheckbox.X = Width - VisibleCheckbox.Width - 8;
+            VisibleCheckbox.X = ClientRectangle.Width - VisibleCheckbox.Width - 8;
             Controls.Add(VisibleCheckbox);
 
             var currentY = VisibleCheckbox.Bounds.Bottom + 2;
