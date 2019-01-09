@@ -12,18 +12,15 @@ namespace GameMenuExtender.UI
 {
     public class TabConfigControl : SdvContainerControl
     {
-        public GameMenuTab MenuTab { get; set; }
         public MenuTabConfig TabConfig { get; /*set;*/ }
 
         private SdvLabel TabNameLabel;
         private SdvCheckbox VisibleCheckbox;
         private List<TabPageConfigControl> PageControls;
 
-        public TabConfigControl(GameMenuTab tab)
+        public TabConfigControl(MenuTabConfig tabConfig)
         {
-            MenuTab = tab;
-            TabConfig = (MenuTabConfig)tab.Configuration;
-
+            TabConfig = tabConfig;
             PageControls = new List<TabPageConfigControl>();
             Padding = new Polymaker.SdvUI.Padding(8, 2, 0, 2);
         }
@@ -51,9 +48,9 @@ namespace GameMenuExtender.UI
 
             var currentY = VisibleCheckbox.Bounds.Bottom + 2;
 
-            foreach (var tabPage in MenuTab.TabPages.OrderBy(p => p.DisplayIndex))
+            foreach (var tabPage in TabConfig.TabPages.OrderBy(p => p.Index))
             {
-                var pageCtrl = new TabPageConfigControl(tabPage)
+                var pageCtrl = new TabPageConfigControl(TabConfig, tabPage)
                 {
                     X = 0,
                     Y = currentY,
@@ -94,7 +91,7 @@ namespace GameMenuExtender.UI
             foreach (var pageCtrl in PageControls)
             {
                 pageCtrl.RefreshInfo();
-                pageCtrl.Y = VisibleCheckbox.Bounds.Bottom + 2 + (pageCtrl.TabPage.DisplayIndex * ctrlHeight);
+                pageCtrl.Y = VisibleCheckbox.Bounds.Bottom + 2 + (pageCtrl.PageConfig.Index * ctrlHeight);
             }
         }
 

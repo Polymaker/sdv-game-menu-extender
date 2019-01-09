@@ -122,6 +122,9 @@ namespace GameMenuExtender.Menus
                 return;
 
             Visible = value;
+
+            if (Manager.IsGameMenuOpen)
+                Manager.RefreshMenu();
         }
 
         internal void SetEnabledFromAPI(bool value)

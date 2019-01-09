@@ -12,8 +12,7 @@ namespace GameMenuExtender.UI
 {
     public class TabPageConfigControl : SdvContainerControl
     {
-        public GameMenuTabPage TabPage { get; }
-        public GameMenuTab MenuTab => TabPage.Tab;
+        public MenuTabConfig TabConfig { get; }
         public MenuTabPageConfig PageConfig { get; /*set;*/ }
 
         private SdvLabel PageNameLabel;
@@ -24,10 +23,10 @@ namespace GameMenuExtender.UI
 
         public event EventHandler ConfigChanged;
 
-        public TabPageConfigControl(GameMenuTabPage tabPage)
+        public TabPageConfigControl(MenuTabConfig tabConfig, MenuTabPageConfig pageConfig)
         {
-            TabPage = tabPage;
-            PageConfig = tabPage.Configuration;
+            TabConfig = tabConfig;
+            PageConfig = pageConfig;
             Padding = new Polymaker.SdvUI.Padding(8, 2, 0, 2);
         }
 
@@ -104,17 +103,26 @@ namespace GameMenuExtender.UI
         {
             var cleanTitle = (PageConfig.Title ?? "Not set").Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
             PageNameLabel.Text = $"Page: {cleanTitle}";
-            VisibleCheckbox.Checked = PageConfig.Visible;
-            var visiblePageCount = MenuTab.TabPages.Count(p => p.Visible);
 
-            VisibleCheckbox.Enabled = !PageConfig.Visible || visiblePageCount > 1;
-            if (TabPage.PageType == typeof(MenuExtenderConfigPage))
-                VisibleCheckbox.Enabled = false;
+            var visiblePageCount = TabConfig.TabPages.Count(p => p.Visible);
+            bool canHidePage = true;
+
+            if (visiblePageCount <= 1)
+                canHidePage = false;
+
+            if(PageConfig.IsVanilla && TabConfig is VanillaTabConfig vTab && string.IsNullOrEmpty(vTab.VanillaPageOverride))
+                canHidePage = false;
+
+            if (PageConfig.ModID == "Polymaker.GameMenuExtender")
+                canHidePage = false;
+
+            VisibleCheckbox.Enabled = !PageConfig.Visible || canHidePage;
+            VisibleCheckbox.Checked = PageConfig.Visible;
 
             UpdateArrowsVisibillity();
 
-            UpArrowBtn.Enabled = TabPage.DisplayIndex > 0;
-            DownArrowBtn.Enabled = TabPage.DisplayIndex < visiblePageCount - 1;
+            UpArrowBtn.Enabled = PageConfig.Index > 0;
+            DownArrowBtn.Enabled = PageConfig.Index < visiblePageCount - 1;
         }
 
         protected override void OnMouseEnter(EventArgs e)
@@ -131,8 +139,8 @@ namespace GameMenuExtender.UI
 
         private void UpdateArrowsVisibillity()
         {
-            var visiblePageCount = MenuTab.VisibleTabPages.Count();
-            UpArrowBtn.Visible = DownArrowBtn.Visible = visiblePageCount > 1 && (/*Focused ||*/ DisplayRectangle.Contains(CursorPosition));
+            var visiblePageCount = TabConfig.TabPages.Count(p => p.Visible);
+            UpArrowBtn.Visible = DownArrowBtn.Visible = visiblePageCount > 1;// && (/*Focused ||*/ DisplayRectangle.Contains(CursorPosition));
         }
 
         private void OnConfigChanged()

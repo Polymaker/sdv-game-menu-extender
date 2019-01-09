@@ -111,7 +111,8 @@ namespace GameMenuExtender.Configs
 
         public List<MenuTabPageConfig> GetTabPagesConfigs(MenuTabConfig tabConfig)
         {
-            var allPages = TabPagesConfigs.Where(c => c.TabName == tabConfig.Name).OfType<MenuTabPageConfig>().ToList();
+            var allPages = TabPagesConfigs.Where(c => tabConfig.NameEquals(c.TabName)).OfType<MenuTabPageConfig>().ToList();
+
             if (tabConfig is VanillaTabConfig vanillaTab)
                 allPages.Add(new VanillaTabPageConfig(vanillaTab));
             
@@ -135,8 +136,10 @@ namespace GameMenuExtender.Configs
                 tabConfig = TabConfigs.FirstOrDefault(c => tab.NameEquals(c.Name) && !c.IsVanilla);
                 if(tabConfig == null)
                 {
-                    tabConfig = new CustomTabConfig((CustomTab)tab);
-                    tabConfig.Index = TabConfigs.Count(t => !t.IsVanilla);
+                    tabConfig = new CustomTabConfig((CustomTab)tab)
+                    {
+                        Index = TabConfigs.Count(t => !t.IsVanilla)
+                    };
                     TabConfigs.Add(tabConfig);
                 }
             }
@@ -218,17 +221,36 @@ namespace GameMenuExtender.Configs
 
             //UPDATES AND CORRECTS THE TABS ORDER
             int currentTabIndex = 0;
-
             foreach (var tab in configs.TabConfigs.OfType<CustomTabConfig>().OrderBy(t => t.Index))
-            {
                 tab.Index = currentTabIndex++;
+
+            foreach (var tab in configs.TabConfigs)
+            {
                 int currentPageIndex = 0;
-                foreach(var page in configs.GetTabPagesConfigs(tab).OrderBy(p => p.Index))
+                foreach (var page in configs.GetTabPagesConfigs(tab).OrderBy(p => p.Index + (p.IsCustom ? 1 : 0)))
                     page.Index = currentPageIndex++;
             }
 
             if (saveIfNeeded && configs.AllConfigs.Any(c => c.HasChanged))
                 configs.Save();
+        }
+
+        //TODO: find a cleaner way to store the default titles
+        public void LoadDefaultTitles()
+        {
+            foreach(var tab in TabConfigs)
+            {
+                var loadedTab = GameMenuExtenderMod.Instance.MenuManager.Configuration.TabConfigs.FirstOrDefault(t => t.Name == tab.Name);
+                tab.DefaultTitle = loadedTab?.DefaultTitle;
+                if (tab is VanillaTabConfig vTab)
+                    vTab.DefaultVanillaTitle = ((VanillaTabConfig)loadedTab).DefaultVanillaTitle;
+            }
+
+            foreach (var page in TabPagesConfigs)
+            {
+                var loadedPage = GameMenuExtenderMod.Instance.MenuManager.Configuration.TabPagesConfigs.FirstOrDefault(p => p.Name == page.Name);
+                page.DefaultTitle = loadedPage?.DefaultTitle;
+            }
         }
     }
 }

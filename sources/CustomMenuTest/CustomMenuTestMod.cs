@@ -44,19 +44,21 @@ namespace CustomMenuTest
         /// </summary>
         /// <param name="tabName">The tab's identifier.</param>
         /// <param name="label">The tab's tooltip text and the tab's main page label.</param>
-        /// <param name="pageMenuClass">The class of the page menu IClickableMenu.</param>
-        void RegisterCustomTabPage(string tabName, string label, Type pageMenuClass);
+        /// <param name="pageMenuClass">The type (class) of the page UI. It must descend from IClickableMenu.</param>
+        /// <returns>Returns the created tab page's ID.</returns>
+        string RegisterCustomTabPage(string tabName, string label, Type pageMenuClass);
 
         /// <summary>
-        /// Registers an additional page for an existing tab. It is possible to extend both custom and vanilla tabs.
+        /// Registers an additional page for an existing tab. It's possible to extend both custom and vanilla tabs.
         /// <para>The standard (vanilla) tab names are: Inventory, Skills, Social, Map, Crafting, Collections, Options, Exit</para>
-        /// <para>To extend a custom tab, use the following format: ModUniqueID.TabName</para>
+        /// <para>To extend a custom tab, use the following format (without quotes): "ModUniqueID:TabName"</para>
         /// </summary>
-        /// <param name="tabName">The tab's name.</param>
+        /// <param name="tabName">The tab's identifier on which to add a custom page.</param>
         /// <param name="pageName">The page's identifier.</param>
         /// <param name="pageLabel">The page label.</param>
-        /// <param name="pageMenuClass">A type desce</param>
-        void RegisterTabPageExtension(string tabName, string pageName, string pageLabel, Type pageMenuClass);
+        /// <param name="pageMenuClass">The type (class) of the page UI. It must descend from IClickableMenu.</param>
+        /// <returns>Returns the created tab page's ID.</returns>
+        string RegisterTabPageExtension(string tabName, string pageName, string pageLabel, Type pageMenuClass);
 
         /// <summary>
         /// Gets the current TabPage displayed in the GameMenu
@@ -69,5 +71,11 @@ namespace CustomMenuTest
         /// </summary>
         /// <returns></returns>
         string GetCurrentTabPageName();
+
+        void SetPageVisibillity(string pageID, bool visible);
+
+        //ITabInfo GetTab(string tabID);
+
+        //ITabPageInfo GetTabPage(string tabPageID);
     }
 }

@@ -32,6 +32,9 @@ namespace GameMenuExtender.UI
         internal void IntiliazeMenu()
         {
             CurrentConfigs = ConfigManager.Load();
+            CurrentConfigs.LoadDefaultTitles();
+            ConfigManager.ValidateAndAdjustTabsConfigs(CurrentConfigs, false);
+
             var mainLabel = new SdvLabel()
             {
                 Text = "Menu Extender Settings:",
@@ -73,12 +76,14 @@ namespace GameMenuExtender.UI
         private void ReloadButton_MouseClick(object sender, Polymaker.SdvUI.MouseEventArgs e)
         {
             CurrentConfigs.Reload();
+            CurrentConfigs.LoadDefaultTitles();
+            ConfigManager.ValidateAndAdjustTabsConfigs(CurrentConfigs, false);
             ReloadConfigs();
         }
 
         private void SaveButton_MouseClick(object sender, Polymaker.SdvUI.MouseEventArgs e)
         {
-            CurrentConfigs.Save();
+            ConfigManager.ValidateAndAdjustTabsConfigs(CurrentConfigs, true);
             GameMenuExtenderMod.Instance.MenuManager.ReloadMenu();
             ReloadConfigs();
         }
@@ -88,7 +93,7 @@ namespace GameMenuExtender.UI
             ConfigListPanel.Controls.Clear();
             TabConfigControls.Clear();
             var currentY = 0;
-            foreach (var tab in GameMenuExtenderMod.Instance.MenuManager.AllTabs)
+            foreach (var tab in CurrentConfigs.TabConfigs)
             {
 
                 var tabConfigCtrl = new TabConfigControl(tab)

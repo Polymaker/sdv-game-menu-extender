@@ -364,19 +364,11 @@ namespace GameMenuExtender.Menus
         internal void ReloadMenu()
         {
             var currentTabPage = CurrentTabPage;
+            Configuration.Reload();
 
             ApplyConfiguration();
 
-            RebuildCustomTabButtons();
-
-            foreach (var tab in AllTabs)
-            {
-                if (!tab.TabPageInitialized)
-                    tab.SelectFirstPage();
-
-                if (tab is VanillaTab vTab)
-                    vTab.InitializeLayout();
-            }
+            RefreshMenu();
 
             if (currentTabPage.IsVisible() && currentTabPage.Tab.IsVisible())
             {
@@ -386,6 +378,20 @@ namespace GameMenuExtender.Menus
             else
             {
                 ChangeTab(AllTabs.First(t => t.IsVisible()));
+            }
+        }
+
+        public void RefreshMenu()
+        {
+            RebuildCustomTabButtons();
+
+            foreach (var tab in AllTabs)
+            {
+                if (!tab.TabPageInitialized)
+                    tab.SelectFirstPage();
+
+                if (tab is VanillaTab vTab)
+                    vTab.InitializeLayout();
             }
         }
 

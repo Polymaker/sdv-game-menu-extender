@@ -10,7 +10,7 @@ namespace GameMenuExtender.Configs
     {
         private VanillaTabConfig _Tab;
 
-        public override bool Visible { get => _Tab.HideVanillaPage; set { } }
+        public override bool Visible { get => !_Tab.HideVanillaPage; set { } }
 
         public override int Index { get => _Tab.VanillaPageIndex; set => _Tab.VanillaPageIndex = value; }
 

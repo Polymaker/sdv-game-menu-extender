@@ -183,18 +183,9 @@ namespace GameMenuExtender.API
 
         public void SetPageVisibillity(string tabPageID, bool visible)
         {
-            var foundPage = MenuManager.AllTabPages.FirstOrDefault(p => p.NameEquals(tabPageID));
-            if (foundPage != null && 
-                MenuManager.CurrentTabPage != foundPage &&
-                !foundPage.IsVanillaOverride &&
-                (visible || foundPage.Tab.VisibleTabPages.Count() > 1))
-            {
+            var foundPage = GetTabPage(tabPageID);
+            if (foundPage != null)
                 foundPage.Visible = visible;
-                if (MenuManager.IsGameMenuOpen)
-                {
-                    MenuManager.ReloadMenu();
-                }
-            }
         }
 
         public ITabInfo GetTab(string tabID)
