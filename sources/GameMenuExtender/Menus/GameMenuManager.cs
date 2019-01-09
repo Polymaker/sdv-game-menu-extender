@@ -19,7 +19,9 @@ namespace GameMenuExtender.Menus
     {
 		internal GameMenuExtenderMod Mod { get; private set; }
 
-		public IModHelper Helper => Mod.Helper;
+        public ConfigManager Configuration { get; private set; }
+
+        public IModHelper Helper => Mod.Helper;
 
 		public IMonitor Monitor => Mod.Monitor;
 
@@ -69,7 +71,7 @@ namespace GameMenuExtender.Menus
 			CustomTabs = new List<CustomTab>();
             GameMenuTabList = new List<ClickableComponent>();
             GameMenuPageList = new List<IClickableMenu>();
-
+            Configuration = new ConfigManager();
             Helper.Events.Display.MenuChanged += MenuEvents_MenuChanged;
         }
 
@@ -142,13 +144,20 @@ namespace GameMenuExtender.Menus
 
 		public void Initialize()
 		{
-			if (!HasInitialized)
+            Configuration.Reload();
+
+            if (!HasInitialized)
 			{
-				InitializeVanillaMenus();
+                InitializeVanillaMenus();
+
 				Mod.ApiInstance.PerformRegistration();
+
                 RegisterTabPageExtension(Mod.ModManifest, "options", "config", "Menu\r\nExtender", typeof(UI.MenuExtenderConfigPage));
-                Mod.Configs.PurgeRemovedModsConfigs();
+
+                Configuration.PurgeRemovedModsConfigs();
+
                 InitializeCompatibilityFixes();
+
                 HasInitialized = true;
             }
 
@@ -247,8 +256,8 @@ namespace GameMenuExtender.Menus
                 }
             }
 
-            if (Mod.Configs.AllConfigs.Any(c => c.HasChanged))
-                Mod.Configs.Save();
+            if (Configuration.AllConfigs.Any(c => c.HasChanged))
+                Configuration.Save();
         }
 
         /// <summary>
@@ -400,7 +409,7 @@ namespace GameMenuExtender.Menus
                         string.IsNullOrEmpty(tab.Configuration.VanillaPageOverride))
                     {
                         tab.Configuration.VanillaPageOverride = customTabPage.Name;
-                        Mod.Configs.Save();
+                        Configuration.Save();
                     }
                 }
                 else
@@ -471,6 +480,8 @@ namespace GameMenuExtender.Menus
 
         internal void ApplyConfiguration()
         {
+            ConfigManager.ValidateAndAdjustTabsConfigs(Configuration);
+
             foreach (var tab in AllTabs)
                 tab.LoadConfig();
 
@@ -525,14 +536,14 @@ namespace GameMenuExtender.Menus
                     if (tab.DrawText)
                     {
                         IClickableMenu.drawTextureBox(b, Game1.mouseCursors, new Rectangle(16, 368, 16, 16),
-                            tabBounds.X, tabBounds.Y + (tab.IsSelected ? 8 : 0), tabBounds.Width, tabBounds.Height, Color.White, 4f, false);
+                            tabBounds.X, tabBounds.Y + (tab.IsSelected ? 8 : 0), tabBounds.Width, tabBounds.Height, tab.Enabled ? Color.White : Color.Gray, 4f, false);
 
                         Utility.drawTextWithShadow(b, tab.Label, Game1.smallFont, new Vector2(tabBounds.X + 16, tabBounds.Y + 24 + (tab.IsSelected ? 8 : 0)), Game1.textColor);
                     }
                     else
                     {
                         b.Draw(Game1.mouseCursors, new Vector2(tabBounds.X, tabBounds.Y + (tab.IsSelected ? 8 : 0)),
-                            new Rectangle?(new Rectangle(16, 368, 16, 16)), Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, 0.0001f);
+                            new Rectangle?(new Rectangle(16, 368, 16, 16)), tab.Enabled ? Color.White : Color.Gray, 0f, Vector2.Zero, 4f, SpriteEffects.None, 0.0001f);
                     }
                 }
             }

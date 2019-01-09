@@ -203,7 +203,7 @@ namespace GameMenuExtender.Configs
                 Save();
         }
 
-        public static void ValidateAndAdjustTabsConfigs(ConfigManager configs)
+        public static void ValidateAndAdjustTabsConfigs(ConfigManager configs, bool saveIfNeeded = true)
         {
             //ENSURE THAT THE CONFIGURED VANILLA PAGES OVERRIDES EXISTS
             foreach (var tab in configs.TabConfigs.OfType<VanillaTabConfig>())
@@ -226,6 +226,9 @@ namespace GameMenuExtender.Configs
                 foreach(var page in configs.GetTabPagesConfigs(tab).OrderBy(p => p.Index))
                     page.Index = currentPageIndex++;
             }
+
+            if (saveIfNeeded && configs.AllConfigs.Any(c => c.HasChanged))
+                configs.Save();
         }
     }
 }

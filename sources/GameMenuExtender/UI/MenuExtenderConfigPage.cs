@@ -1,4 +1,5 @@
-﻿using Polymaker.SdvUI.Controls;
+﻿using GameMenuExtender.Configs;
+using Polymaker.SdvUI.Controls;
 using StardewValley;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace GameMenuExtender.UI
     {
         private SdvScrollableControl ConfigListPanel;
         private List<TabConfigControl> TabConfigControls;
-
+        private ConfigManager CurrentConfigs;
         private SdvButton SaveButton;
         private SdvButton ReloadButton;
 
@@ -30,6 +31,7 @@ namespace GameMenuExtender.UI
 
         internal void IntiliazeMenu()
         {
+            CurrentConfigs = ConfigManager.Load();
             var mainLabel = new SdvLabel()
             {
                 Text = "Menu Extender Settings:",
@@ -70,17 +72,15 @@ namespace GameMenuExtender.UI
 
         private void ReloadButton_MouseClick(object sender, Polymaker.SdvUI.MouseEventArgs e)
         {
-            GameMenuExtenderMod.Instance.Configs.Reload();
-            GameMenuExtenderMod.Instance.MenuManager.ReloadMenu();
+            CurrentConfigs.Reload();
             ReloadConfigs();
         }
 
         private void SaveButton_MouseClick(object sender, Polymaker.SdvUI.MouseEventArgs e)
         {
-            GameMenuExtenderMod.Instance.MenuManager.ApplyConfiguration();
+            CurrentConfigs.Save();
             GameMenuExtenderMod.Instance.MenuManager.ReloadMenu();
             ReloadConfigs();
-
         }
 
         private void ReloadConfigs()

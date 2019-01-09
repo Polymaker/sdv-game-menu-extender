@@ -65,8 +65,8 @@ namespace GameMenuExtender.API
                     MenuManager.RegisterTabPageExtension(entry.Source, entry.TabName, entry.PageName, entry.Label, entry.PageMenuClass);
 			}
 
-            if (Mod.Configs.AllConfigs.Any(c => c.HasChanged))
-                Mod.Configs.Save();
+            if (MenuManager.Configuration.AllConfigs.Any(c => c.HasChanged))
+                MenuManager.Configuration.Save();
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace GameMenuExtender.API
             }
 
             var customTab = Mod.MenuManager.RegisterCustomTabPage(sourceMod, tabName, label, pageMenuClass);
-            Mod.Configs.Save();
+            MenuManager.Configuration.Save();
 
             return customTab?.Name;
         }
@@ -135,7 +135,7 @@ namespace GameMenuExtender.API
             }
 
             var customPage = Mod.MenuManager.RegisterTabPageExtension(sourceMod, tabName, pageName, pageLabel, pageMenuClass);
-            Mod.Configs.Save();
+            MenuManager.Configuration.Save();
 
             return customPage?.Name;
         }
@@ -181,9 +181,9 @@ namespace GameMenuExtender.API
             return MenuManager.CurrentTabPage?.Name;
         }
 
-        public void SetPageVisibillity(string pageID, bool visible)
+        public void SetPageVisibillity(string tabPageID, bool visible)
         {
-            var foundPage = MenuManager.AllTabPages.FirstOrDefault(p => p.NameEquals(pageID));
+            var foundPage = MenuManager.AllTabPages.FirstOrDefault(p => p.NameEquals(tabPageID));
             if (foundPage != null && 
                 MenuManager.CurrentTabPage != foundPage &&
                 !foundPage.IsVanillaOverride &&
@@ -192,9 +192,19 @@ namespace GameMenuExtender.API
                 foundPage.Visible = visible;
                 if (MenuManager.IsGameMenuOpen)
                 {
-
+                    MenuManager.ReloadMenu();
                 }
             }
+        }
+
+        public ITabInfo GetTab(string tabID)
+        {
+            return MenuManager.AllTabs.FirstOrDefault(p => p.NameEquals(tabID));
+        }
+
+        public ITabPageInfo GetTabPage(string tabPageID)
+        {
+            return MenuManager.AllTabPages.FirstOrDefault(p => p.NameEquals(tabPageID));
         }
     }
 }

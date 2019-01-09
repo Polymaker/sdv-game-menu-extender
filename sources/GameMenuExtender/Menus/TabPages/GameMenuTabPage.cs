@@ -1,4 +1,5 @@
-﻿using GameMenuExtender.Configs;
+﻿using GameMenuExtender.API;
+using GameMenuExtender.Configs;
 using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
@@ -9,11 +10,13 @@ using System.Threading.Tasks;
 
 namespace GameMenuExtender.Menus
 {
-    public abstract class GameMenuTabPage : GameMenuElement
+    public abstract class GameMenuTabPage : GameMenuElement, API.ITabPageInfo
     {
         public override MenuType Type => MenuType.TabPage;
 
         public GameMenuTab Tab { get; internal set; }
+
+        ITabInfo ITabPageInfo.Tab => Tab;
 
         public virtual string Tooltip { get; set; }
 
@@ -35,16 +38,13 @@ namespace GameMenuExtender.Menus
 
 		public CreateMenuPageParams GameWindowOffset { get; protected set; }
 
-        //public override bool Visible
-        //{
-        //    get => Configuration?.Visible ?? base.Visible;
-        //    set
-        //    {
-        //        if (Configuration != null)
-        //            Configuration.Visible = value;
-        //        base.Visible = value;
-        //    }
-        //}
+        public string TabName => Tab.Name;
+
+        public bool Suppressed => !(Configuration?.Visible ?? true);
+
+        bool API.ITabPageInfo.Visible { get => Visible; set => SetVisibleFromAPI(value); }
+
+        bool API.ITabPageInfo.Enabled { get => Enabled; set => SetEnabledFromAPI(value); }
 
         internal GameMenuTabPage(GameMenuTab tab, string name) : base(tab.Manager, name)
         {
@@ -106,13 +106,35 @@ namespace GameMenuExtender.Menus
 
         public void LoadConfig()
         {
-            Configuration = Manager.Mod.Configs.LoadOrCreateConfig(this);
+            Configuration = Manager.Configuration.LoadOrCreateConfig(this);
             Label = Configuration.Title;
         }
 
         public bool IsVisible()
         {
             return Configuration.Visible && Visible;
+        }
+
+        internal void SetVisibleFromAPI(bool value)
+        {
+            if (IsVanillaOverride || (Manager.IsGameMenuOpen && Manager.CurrentTabPage == this))
+                return;
+
+            if (!value && Tab.VisibleTabPages.Count(p => p.Enabled) <= 1)
+                return;
+
+            Visible = value;
+        }
+
+        internal void SetEnabledFromAPI(bool value)
+        {
+            if (IsVanillaOverride || (Manager.IsGameMenuOpen && Manager.CurrentTabPage == this))
+                return;
+
+            if (!value && Tab.VisibleTabPages.Count(p => p.Enabled) <= 1)
+                return;
+
+            Enabled = value;
         }
     }
 }

@@ -68,6 +68,8 @@
   <ItemGroup>
     <Compile Include="API\GameMenuExtenderAPI.cs" />
     <Compile Include="API\IGameMenuExtenderAPI.cs" />
+    <Compile Include="API\ITabInfo.cs" />
+    <Compile Include="API\ITabPageInfo.cs" />
     <Compile Include="Compatibility\CompatibilityPatch.cs" />
     <Compile Include="Compatibility\GiftTasteHelperPatch.cs" />
     <Compile Include="Configs\ConfigBase.cs" />

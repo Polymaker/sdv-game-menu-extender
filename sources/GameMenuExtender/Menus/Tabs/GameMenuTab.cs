@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GameMenuExtender.Menus
 {
-    public abstract class GameMenuTab : GameMenuElement/*, IGameMenuTab*/
+    public abstract class GameMenuTab : GameMenuElement, API.ITabInfo
     {
         private List<GameMenuTabPage> _TabPages;
 
@@ -40,16 +40,11 @@ namespace GameMenuExtender.Menus
 
         public MenuTabConfig Configuration { get; private set; }
 
-        //public override bool Visible
-        //{
-        //    get => Configuration?.Visible ?? base.Visible;
-        //    set
-        //    {
-        //        if (Configuration != null)
-        //            Configuration.Visible = value;
-        //        base.Visible = value;
-        //    }
-        //}
+        public bool Suppressed => !(Configuration?.Visible ?? true);
+
+        bool API.ITabInfo.Visible { get => Visible; set => SetVisibleFromAPI(value); }
+
+        bool API.ITabInfo.Enabled { get => Enabled; set => SetEnabledFromAPI(value); }
 
         internal GameMenuTab(GameMenuManager manager, string name) : base(manager, name)
         {
@@ -100,7 +95,7 @@ namespace GameMenuExtender.Menus
 
         public virtual void LoadConfig()
         {
-            Configuration = Manager.Mod.Configs.LoadOrCreateConfig(this);
+            Configuration = Manager.Configuration.LoadOrCreateConfig(this);
             Label = Configuration.Title;
         }
 
@@ -120,5 +115,21 @@ namespace GameMenuExtender.Menus
         {
             return Configuration.Visible && Visible;
         }
-	}
+
+        internal void SetVisibleFromAPI(bool value)
+        {
+            if (IsVanilla || (Manager.IsGameMenuOpen && Manager.CurrentTab == this))
+                return;
+
+            Visible = value;
+        }
+
+        internal void SetEnabledFromAPI(bool value)
+        {
+            if (IsVanilla || (Manager.IsGameMenuOpen && Manager.CurrentTab == this))
+                return;
+
+            Enabled = value;
+        }
+    }
 }

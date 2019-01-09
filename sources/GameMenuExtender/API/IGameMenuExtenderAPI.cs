@@ -45,5 +45,10 @@ namespace GameMenuExtender.API
         string GetCurrentTabPageName();
 
         void SetPageVisibillity(string pageID, bool visible);
+
+        ITabInfo GetTab(string tabID);
+
+        ITabPageInfo GetTabPage(string tabPageID);
+
 	}
 }

@@ -392,7 +392,7 @@ namespace GameMenuExtender.Menus
 		{
             bool isCurrent = pageTab.IsSelected;
 
-            var buttonColor = pageTab.IsSelected ? Color.White : Color.LightGray;
+            var buttonColor = pageTab.Enabled ? (pageTab.IsSelected ? Color.White : Color.LightGray) : Color.Gray;
 			var buttonBounds = pageTab.TabPageButton.bounds;
             var clipRect = new Rectangle(0, buttonBounds.Y - 10, xPositionOnScreen + 16, buttonBounds.Height + 20);
 
@@ -403,7 +403,7 @@ namespace GameMenuExtender.Menus
 
             using (new GraphicClip(b, clipRect))
             {
-                IClickableMenu.drawTextureBox(b, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
+                drawTextureBox(b, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
 				    buttonBounds.X, buttonBounds.Y, buttonBounds.Width + 16, buttonBounds.Height, buttonColor, 1f, pageTab.IsSelected);
 
                 Utility.drawTextWithShadow(b, pageTab.Label, Game1.smallFont,
@@ -420,7 +420,7 @@ namespace GameMenuExtender.Menus
             {
                 if (tab.IsVisible() && tab.TabButton != null && tab.TabButton.containsPoint(x, y))
                 {
-					if ((tab.IsCustom && !tab.IsSelected) || (Manager.CurrentTab.IsCustom && !tab.IsCustom))
+					if ((tab.IsCustom && !tab.IsSelected && tab.Enabled) || (Manager.CurrentTab.IsCustom && !tab.IsCustom))
 					{
 						Manager.ChangeTab(tab);
 						Game1.playSound("smallSelect");
@@ -436,7 +436,7 @@ namespace GameMenuExtender.Menus
 			{
 				if (tabPage.IsVisible() && tabPage.TabPageButton != null && tabPage.TabPageButton.containsPoint(x, y))
 				{
-                    if (!tabPage.IsSelected)
+                    if (!tabPage.IsSelected && tabPage.Enabled)
                     {
                         Manager.CurrentTab.SelectTabPage(tabPage);
                         Game1.playSound("smallSelect");

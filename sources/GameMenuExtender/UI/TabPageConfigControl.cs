@@ -14,7 +14,7 @@ namespace GameMenuExtender.UI
     {
         public GameMenuTabPage TabPage { get; }
         public GameMenuTab MenuTab => TabPage.Tab;
-        public IMenuTabPageConfig PageConfig { get; /*set;*/ }
+        public MenuTabPageConfig PageConfig { get; /*set;*/ }
 
         private SdvLabel PageNameLabel;
         private SdvCheckbox VisibleCheckbox;
