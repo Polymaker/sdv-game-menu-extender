@@ -50,7 +50,7 @@ namespace GameMenuExtender.Menus
 
             foreach (var tabPage in tab.TabPages.OrderBy(p => p.DisplayIndex))
             {
-				if (tabPage.Visible)
+				if (tabPage.IsVisible())
 				{
 					var labelSize = Game1.smallFont.MeasureString(tabPage.Label);
 					int tabWidth = (int)labelSize.X + TabPaddingX;
@@ -361,7 +361,7 @@ namespace GameMenuExtender.Menus
         {
             HoverText = string.Empty;
 
-            foreach (var tab in Manager.CustomTabs.Where(t => t.Visible && t.TabButton != null && !t.DrawText))
+            foreach (var tab in Manager.CustomTabs.Where(t => t.IsVisible() && t.TabButton != null && !t.DrawText))
             {
                 if (tab.TabButton.containsPoint(x, y))
                 {
@@ -378,12 +378,12 @@ namespace GameMenuExtender.Menus
 
         private void DrawPagesTabButtons(SpriteBatch b)
 		{
-			if (Manager.CurrentTab == null || Manager.CurrentTab.TabPages.Count(p => p.Visible) == 1)
+			if (Manager.CurrentTab == null || Manager.CurrentTab.TabPages.Count(p => p.IsVisible()) == 1)
 				return;
 
 			foreach (var tabPage in Manager.CurrentTab.TabPages)
 			{
-				if (tabPage.Visible && tabPage.TabPageButton != null)
+				if (tabPage.IsVisible() && tabPage.TabPageButton != null)
 					DrawPageExtensionTab(b, tabPage);
 			}
 		}
@@ -418,7 +418,7 @@ namespace GameMenuExtender.Menus
 		{
             foreach (var tab in Manager.AllTabs)
             {
-                if (tab.Visible && tab.TabButton != null && tab.TabButton.containsPoint(x, y))
+                if (tab.IsVisible() && tab.TabButton != null && tab.TabButton.containsPoint(x, y))
                 {
 					if ((tab.IsCustom && !tab.IsSelected) || (Manager.CurrentTab.IsCustom && !tab.IsCustom))
 					{
@@ -429,12 +429,12 @@ namespace GameMenuExtender.Menus
 				}
             }
 
-			if (Manager.CurrentTab == null || Manager.CurrentTab.TabPages.Count(p => p.Visible) == 1)
+			if (Manager.CurrentTab == null || Manager.CurrentTab.TabPages.Count(p => p.IsVisible()) == 1)
 				return false;
 
 			foreach (var tabPage in Manager.CurrentTab.TabPages)
 			{
-				if (tabPage.Visible && tabPage.TabPageButton != null && tabPage.TabPageButton.containsPoint(x, y))
+				if (tabPage.IsVisible() && tabPage.TabPageButton != null && tabPage.TabPageButton.containsPoint(x, y))
 				{
                     if (!tabPage.IsSelected)
                     {

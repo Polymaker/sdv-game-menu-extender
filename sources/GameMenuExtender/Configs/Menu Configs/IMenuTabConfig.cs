@@ -11,11 +11,12 @@ namespace GameMenuExtender.Configs
         string Name { get; }
         string Title { get; set; }
         string DefaultTitle { get; set; }
+        [Obsolete("The TabPage with index 0 is the default page.")]
         string DefaultPage { get; set; }
-        string PageTitle { get; set; }
-        string DefaultPageTitle { get; set; }
-        bool PageVisible { get; set; }
-        int PageIndex { get; set; }
+        //string PageTitle { get; set; }
+        //string DefaultPageTitle { get; set; }
+        //bool PageVisible { get; set; }
+        //int PageIndex { get; set; }
         bool Visible { get; set; }
         int Index { get; set; }
         bool IsVanilla { get; }

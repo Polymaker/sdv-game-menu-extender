@@ -6,29 +6,22 @@ using System.Threading.Tasks;
 
 namespace GameMenuExtender.Configs
 {
-    public class VanillaTabPageConfig : IMenuTabPageConfig
+    public class VanillaTabPageConfig : MenuTabPageConfig
     {
         private VanillaTabConfig _Tab;
 
-        public string TabName => _Tab.Name;
+        public override bool Visible { get => _Tab.HideVanillaPage; set { } }
 
-        public string Name => _Tab.Name;
+        public override int Index { get => _Tab.VanillaPageIndex; set => _Tab.VanillaPageIndex = value; }
 
-        public bool Visible { get => _Tab.PageVisible; set => _Tab.PageVisible = value; }
+        public override string Title { get => string.IsNullOrEmpty(_Tab.VanillaPageTitle) ? DefaultTitle : _Tab.VanillaPageTitle; set => _Tab.VanillaPageTitle = value; }
 
-        public int Index { get => _Tab.PageIndex; set => _Tab.PageIndex = value; }
+        public override string DefaultTitle { get => _Tab.DefaultVanillaTitle; set => _Tab.DefaultVanillaTitle = value; }
 
-        public string Title { get => string.IsNullOrEmpty(_Tab.PageTitle) ? DefaultTitle : _Tab.PageTitle; set => _Tab.PageTitle = value; }
-
-        public string DefaultTitle { get => _Tab.DefaultPageTitle; set => _Tab.DefaultPageTitle = value; }
-
-        public bool IsVanilla => true;
-
-        public bool IsCustom => false;
-
-        public bool IsNew => false;
+        public override bool IsVanilla => true;
 
         public VanillaTabPageConfig(VanillaTabConfig tab)
+            : base(tab.Name, tab.Name)
         {
             _Tab = tab;
         }

@@ -66,15 +66,22 @@ namespace GameMenuExtender.API
 			}
 
             if (Mod.Configs.AllConfigs.Any(c => c.HasChanged))
-                Mod.Configs.SaveConfigs();
+                Mod.Configs.Save();
         }
 
-        public void RegisterCustomTabPage(string tabName, string label, Type pageMenuClass)
+        /// <summary>
+        /// Registers a custom tab (and page) in the game menu.
+        /// </summary>
+        /// <param name="tabName">The tab's identifier.</param>
+        /// <param name="label">The tab's tooltip text and the tab's main page label.</param>
+        /// <param name="pageMenuClass">The type (class) of the page UI. It must descend from IClickableMenu.</param>
+        /// <returns>Returns the created tab page's ID.</returns>
+        public string RegisterCustomTabPage(string tabName, string label, Type pageMenuClass)
         {
 			Monitor.Log($"RegisterCustomTabPage(\"{tabName}\", \"{label}\", typeof({pageMenuClass.FullName}))", LogLevel.Debug);
 
             if (!ValidateParameters(pageMenuClass, out IManifest sourceMod))
-                return;
+                return string.Empty;
 
             if (!MenuManager.HasInitialized)
             {
@@ -86,19 +93,31 @@ namespace GameMenuExtender.API
                     PageMenuClass = pageMenuClass,
                     Source = sourceMod
                 });
-                return;
+                return $"{sourceMod.UniqueID}:{tabName}";
             }
 
-            Mod.MenuManager.RegisterCustomTabPage(sourceMod, tabName, label, pageMenuClass);
-            Mod.Configs.SaveConfigs();
+            var customTab = Mod.MenuManager.RegisterCustomTabPage(sourceMod, tabName, label, pageMenuClass);
+            Mod.Configs.Save();
+
+            return customTab?.Name;
         }
 
-        public void RegisterTabPageExtension(string tabName, string pageName, string pageLabel, Type pageMenuClass)
+        /// <summary>
+        /// Registers an additional page for an existing tab. It's possible to extend both custom and vanilla tabs.
+        /// <para>The standard (vanilla) tab names are: Inventory, Skills, Social, Map, Crafting, Collections, Options, Exit</para>
+        /// <para>To extend a custom tab, use the following format (without quotes): "ModUniqueID:TabName"</para>
+        /// </summary>
+        /// <param name="tabName">The tab's identifier on which to add a custom page.</param>
+        /// <param name="pageName">The page's identifier.</param>
+        /// <param name="pageLabel">The page label.</param>
+        /// <param name="pageMenuClass">The type (class) of the page UI. It must descend from IClickableMenu.</param>
+        /// <returns>Returns the created tab page ID.</returns>
+        public string RegisterTabPageExtension(string tabName, string pageName, string pageLabel, Type pageMenuClass)
         {
 			Monitor.Log($"RegisterTabPageExtension(\"{tabName}\", \"{pageName}\", \"{pageLabel}\", typeof({pageMenuClass.FullName}))", LogLevel.Debug);
 
 			if (!ValidateParameters(pageMenuClass, out IManifest sourceMod))
-                return;
+                return string.Empty;
 
             if (!MenuManager.HasInitialized)
             {
@@ -112,11 +131,13 @@ namespace GameMenuExtender.API
 					Source = sourceMod,
 					DependsOn = tabName.Contains(':') ? tabName.Split(':')[0] : string.Empty
 				});
-                return;
+                return $"{sourceMod.UniqueID}:{pageName}";
             }
 
-            Mod.MenuManager.RegisterTabPageExtension(sourceMod, tabName, pageName, pageLabel, pageMenuClass);
-            Mod.Configs.SaveConfigs();
+            var customPage = Mod.MenuManager.RegisterTabPageExtension(sourceMod, tabName, pageName, pageLabel, pageMenuClass);
+            Mod.Configs.Save();
+
+            return customPage?.Name;
         }
 
         private bool ValidateParameters(Type pageMenuClass, out IManifest sourceMod)
@@ -158,6 +179,22 @@ namespace GameMenuExtender.API
         public string GetCurrentTabPageName()
         {
             return MenuManager.CurrentTabPage?.Name;
+        }
+
+        public void SetPageVisibillity(string pageID, bool visible)
+        {
+            var foundPage = MenuManager.AllTabPages.FirstOrDefault(p => p.NameEquals(pageID));
+            if (foundPage != null && 
+                MenuManager.CurrentTabPage != foundPage &&
+                !foundPage.IsVanillaOverride &&
+                (visible || foundPage.Tab.VisibleTabPages.Count() > 1))
+            {
+                foundPage.Visible = visible;
+                if (MenuManager.IsGameMenuOpen)
+                {
+
+                }
+            }
         }
     }
 }

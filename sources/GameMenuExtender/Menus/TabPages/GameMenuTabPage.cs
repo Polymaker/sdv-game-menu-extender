@@ -23,7 +23,9 @@ namespace GameMenuExtender.Menus
 
 		public IClickableMenu PageWindow { get; internal set; }
 
-        public IMenuTabPageConfig Configuration { get; private set; }
+        public MenuTabPageConfig Configuration { get; private set; }
+
+        public bool IsVanillaOverride => Tab is VanillaTab vTab ? NameEquals(vTab.Configuration.VanillaPageOverride) : false;
 
         public int DisplayIndex
         {
@@ -33,16 +35,16 @@ namespace GameMenuExtender.Menus
 
 		public CreateMenuPageParams GameWindowOffset { get; protected set; }
 
-        public override bool Visible
-        {
-            get => Configuration?.Visible ?? base.Visible;
-            set
-            {
-                if (Configuration != null)
-                    Configuration.Visible = value;
-                base.Visible = value;
-            }
-        }
+        //public override bool Visible
+        //{
+        //    get => Configuration?.Visible ?? base.Visible;
+        //    set
+        //    {
+        //        if (Configuration != null)
+        //            Configuration.Visible = value;
+        //        base.Visible = value;
+        //    }
+        //}
 
         internal GameMenuTabPage(GameMenuTab tab, string name) : base(tab.Manager, name)
         {
@@ -107,5 +109,10 @@ namespace GameMenuExtender.Menus
             Configuration = Manager.Mod.Configs.LoadOrCreateConfig(this);
             Label = Configuration.Title;
         }
-	}
+
+        public bool IsVisible()
+        {
+            return Configuration.Visible && Visible;
+        }
+    }
 }

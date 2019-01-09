@@ -1,4 +1,5 @@
-﻿using GameMenuExtender.Menus;
+﻿using GameMenuExtender.Configs.Serialization;
+using GameMenuExtender.Menus;
 using StardewModdingAPI;
 using System;
 using System.Collections.Generic;
@@ -10,30 +11,25 @@ namespace GameMenuExtender.Configs
 {
     internal class ConfigManager
     {
-        private IMod Mod;
+        private static IMod Mod => GameMenuExtenderMod.Instance;
 
-        public List<GameMenuTabConfig> TabConfigs { get; } = new List<GameMenuTabConfig>();
+        public List<MenuTabConfig> TabConfigs { get; } = new List<MenuTabConfig>();
 
         public List<CustomTabPageConfig> TabPagesConfigs { get; } = new List<CustomTabPageConfig>();
 
         public IEnumerable<ConfigBase> AllConfigs => TabConfigs.OfType<ConfigBase>().Concat(TabPagesConfigs);
 
-        public ConfigManager(IMod mod)
-        {
-            Mod = mod;
-        }
-
-        public void LoadConfigs()
+        public void Reload()
         {
             TabConfigs.Clear();
             TabPagesConfigs.Clear();
 
-            var configObj = Mod.Helper.ReadConfig<GameMenuExtenderConfig>();
+            var configObj = Mod.Helper.ReadConfig<GameMenuExtenderCfg>();
             configObj.LinkTabsAndPages();
 
             foreach(var vTabConfig in configObj.VanillaTabs.AsList())
             {
-                if(vTabConfig != null && !string.IsNullOrEmpty(vTabConfig.DefaultPage))
+                if(vTabConfig != null)
                 {
                     TabConfigs.Add(new VanillaTabConfig(vTabConfig));
                     if (vTabConfig.TabPages != null)
@@ -53,26 +49,32 @@ namespace GameMenuExtender.Configs
                         TabPagesConfigs.Add(new CustomTabPageConfig(tabPage));
                 }
             }
+
+            foreach (var tab in TabConfigs)
+            {
+                tab.TabPages.Clear();
+                tab.TabPages.AddRange(GetTabPagesConfigs(tab));
+            }
         }
 
-        public void SaveConfigs()
+        public void Save()
         {
-            var configObj = new GameMenuExtenderConfig();
+            var configObj = new GameMenuExtenderCfg();
 
             foreach(var vTab in TabConfigs.Where(c => c.IsVanilla))
             {
-                configObj.VanillaTabs[vTab.Tab] = (GameMenuExtenderConfig.VanillaTabConfig)vTab.GetConfigObject();
-                configObj.VanillaTabs[vTab.Tab].TabPages = TabPagesConfigs.Where(p => p.TabName.ToLower() == vTab.Name.ToLower()).OrderBy(c => c.Index).Select(c => c.GetConfigObject()).ToArray();
+                configObj.VanillaTabs[vTab.Tab] = (VanillaTabCfg)vTab.GetJsonObject();
+                configObj.VanillaTabs[vTab.Tab].TabPages = TabPagesConfigs.Where(p => p.TabName.ToLower() == vTab.Name.ToLower()).OrderBy(c => c.Index).Select(c => c.GetJsonObject()).ToArray();
                 if (configObj.VanillaTabs[vTab.Tab].TabPages.Length == 0)
                     configObj.VanillaTabs[vTab.Tab].TabPages = null;
             }
 
-            var customConfigs = new List<GameMenuExtenderConfig.CustomTabConfig>();
+            var customConfigs = new List<CustomTabCfg>();
 
             foreach (var cTab in TabConfigs.Where(c => !c.IsVanilla).OrderBy(c => c.Index))
             {
-                var tabConfig = (GameMenuExtenderConfig.CustomTabConfig)cTab.GetConfigObject();
-                tabConfig.TabPages = TabPagesConfigs.Where(p => p.TabName.ToLower() == cTab.Name.ToLower()).OrderBy(c => c.Index).Select(c => c.GetConfigObject()).ToArray();
+                var tabConfig = (CustomTabCfg)cTab.GetJsonObject();
+                tabConfig.TabPages = TabPagesConfigs.Where(p => p.TabName.ToLower() == cTab.Name.ToLower()).OrderBy(c => c.Index).Select(c => c.GetJsonObject()).ToArray();
                 if (tabConfig.TabPages.Length == 0)
                     tabConfig.TabPages = null;
                 customConfigs.Add(tabConfig);
@@ -85,6 +87,13 @@ namespace GameMenuExtender.Configs
             AllConfigs.ToList().ForEach(c => c.MarkAsSaved());
         }
 
+        public static ConfigManager Load()
+        {
+            var config = new ConfigManager();
+            config.Reload();
+            return config;
+        }
+
         public VanillaTabConfig GetVanillaTabConfig(GameMenuTabs tab)
         {
             return TabConfigs.OfType<VanillaTabConfig>().FirstOrDefault(c => c.Tab == tab);
@@ -95,23 +104,23 @@ namespace GameMenuExtender.Configs
             return TabPagesConfigs.Where(c => tab.NameEquals(c.TabName)).ToList();
         }
 
-        public List<CustomTabPageConfig> GetTabPagesConfig(GameMenuExtenderConfig.TabConfig tab)
+        public List<CustomTabPageConfig> GetTabPagesConfig(TabCfgBase tab)
         {
             return TabPagesConfigs.Where(c => c.TabName.ToLower() == tab.Name.ToLower()).ToList();
         }
 
-        public List<IMenuTabPageConfig> GetTabPagesConfig(IMenuTabConfig tabConfig)
+        public List<MenuTabPageConfig> GetTabPagesConfigs(MenuTabConfig tabConfig)
         {
-            var allPages = TabPagesConfigs.Where(c => c.TabName == tabConfig.Name).OfType<IMenuTabPageConfig>().ToList();
+            var allPages = TabPagesConfigs.Where(c => c.TabName == tabConfig.Name).OfType<MenuTabPageConfig>().ToList();
             if (tabConfig is VanillaTabConfig vanillaTab)
                 allPages.Add(new VanillaTabPageConfig(vanillaTab));
             
             return allPages.OrderBy(p => p.Index).ToList();
         }
 
-        public GameMenuTabConfig LoadOrCreateConfig(GameMenuTab tab)
+        public MenuTabConfig LoadOrCreateConfig(GameMenuTab tab)
         {
-            GameMenuTabConfig tabConfig = null;
+            MenuTabConfig tabConfig = null;
             if (tab.IsVanilla)
             {
                 tabConfig = TabConfigs.FirstOrDefault(c => tab.NameEquals(c.Name) && c.IsVanilla);
@@ -138,13 +147,13 @@ namespace GameMenuExtender.Configs
             {
                 var vConf = (VanillaTabConfig)tabConfig;
                 var vTab = (VanillaTab)tab;
-                vConf.DefaultPageTitle = vTab.VanillaPage.Label;
+                vConf.DefaultVanillaTitle = vTab.VanillaPage.Label;
             }
             
             return tabConfig;
         }
 
-        public IMenuTabPageConfig LoadOrCreateConfig(GameMenuTabPage tabPage)
+        public MenuTabPageConfig LoadOrCreateConfig(GameMenuTabPage tabPage)
         {
             CustomTabPageConfig tabPageConfig = TabPagesConfigs.FirstOrDefault(p => tabPage.NameEquals(p.Name) && tabPage.Tab.NameEquals(p.TabName));
 
@@ -160,7 +169,7 @@ namespace GameMenuExtender.Configs
                     Index = GetTabPagesConfig(tabPage.Tab).Count
                 };
 
-                if (tabConfig is VanillaTabConfig vtc && vtc.PageIndex > 0)
+                if (tabConfig is VanillaTabConfig vtc && vtc.VanillaPageIndex > 0)
                     tabPageConfig.Index += 1;
 
                 TabPagesConfigs.Add(tabPageConfig);
@@ -171,8 +180,7 @@ namespace GameMenuExtender.Configs
             return tabPageConfig;
         }
 
-
-        public void PurgeRemovedMods()
+        public void PurgeRemovedModsConfigs(bool saveIfNeeded = true)
         {
             for (int i = TabPagesConfigs.Count - 1; i >= 0; i--)
             {
@@ -191,8 +199,33 @@ namespace GameMenuExtender.Configs
                 }
             }
 
-            if (AllConfigs.Any(c => c.HasChanged))
-                SaveConfigs();
+            if (saveIfNeeded && AllConfigs.Any(c => c.HasChanged))
+                Save();
+        }
+
+        public static void ValidateAndAdjustTabsConfigs(ConfigManager configs)
+        {
+            //ENSURE THAT THE CONFIGURED VANILLA PAGES OVERRIDES EXISTS
+            foreach (var tab in configs.TabConfigs.OfType<VanillaTabConfig>())
+            {
+                if (!string.IsNullOrEmpty(tab.VanillaPageOverride) &&
+                    !tab.TabPages.Any(p => p.NameEquals(tab.VanillaPageOverride)))
+                {
+                    //page override does not exists
+                    tab.VanillaPageOverride = null;
+                }
+            }
+
+            //UPDATES AND CORRECTS THE TABS ORDER
+            int currentTabIndex = 0;
+
+            foreach (var tab in configs.TabConfigs.OfType<CustomTabConfig>().OrderBy(t => t.Index))
+            {
+                tab.Index = currentTabIndex++;
+                int currentPageIndex = 0;
+                foreach(var page in configs.GetTabPagesConfigs(tab).OrderBy(p => p.Index))
+                    page.Index = currentPageIndex++;
+            }
         }
     }
 }

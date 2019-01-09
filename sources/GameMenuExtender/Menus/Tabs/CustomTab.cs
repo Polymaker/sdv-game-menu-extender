@@ -21,6 +21,8 @@ namespace GameMenuExtender.Menus
 
         public override GameMenuTabs TabName => GameMenuTabs.Custom;
 
+        public new CustomTabConfig Configuration => base.Configuration as CustomTabConfig;
+
         internal CustomTab(GameMenuManager manager, IManifest mod, string name, string label) : base(manager, name)
         {
             Label = label;

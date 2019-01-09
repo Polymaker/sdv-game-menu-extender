@@ -70,14 +70,14 @@ namespace GameMenuExtender.UI
 
         private void ReloadButton_MouseClick(object sender, Polymaker.SdvUI.MouseEventArgs e)
         {
-            GameMenuExtenderMod.Instance.Configs.LoadConfigs();
+            GameMenuExtenderMod.Instance.Configs.Reload();
             GameMenuExtenderMod.Instance.MenuManager.ReloadMenu();
             ReloadConfigs();
         }
 
         private void SaveButton_MouseClick(object sender, Polymaker.SdvUI.MouseEventArgs e)
         {
-            GameMenuExtenderMod.Instance.MenuManager.ValidateTabConfigs();
+            GameMenuExtenderMod.Instance.MenuManager.ApplyConfiguration();
             GameMenuExtenderMod.Instance.MenuManager.ReloadMenu();
             ReloadConfigs();
 

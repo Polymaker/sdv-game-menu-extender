@@ -9,33 +9,36 @@ using System.Threading.Tasks;
 
 namespace GameMenuExtender.Configs
 {
-    public class VanillaTabConfig : GameMenuTabConfig
+    public class VanillaTabConfig : MenuTabConfig
     {
-        private bool _VanillaPageVisible;
+        //private bool _HideVanillaPage;
         private int _VanillaPageIndex;
         private string _VanillaPageTitle;
+        public string _VanillaPageOverride;
         private GameMenuTabs _Tab;
 
-        public override bool PageVisible { get => _VanillaPageVisible; set => SetPropertyValue(ref _VanillaPageVisible, value); }
+        public bool HideVanillaPage => !string.IsNullOrEmpty(VanillaPageOverride);
 
-        public override int PageIndex { get => _VanillaPageIndex; set => SetPropertyValue(ref _VanillaPageIndex, value); }
+        public int VanillaPageIndex { get => _VanillaPageIndex; set => SetPropertyValue(ref _VanillaPageIndex, value); }
 
-        public override string PageTitle { get => string.IsNullOrEmpty(_VanillaPageTitle) ? DefaultPageTitle : _VanillaPageTitle; set => SetPropertyValue(ref _VanillaPageTitle, value); }
+        public string VanillaPageTitle { get => string.IsNullOrEmpty(_VanillaPageTitle) ? DefaultVanillaTitle : _VanillaPageTitle; set => SetPropertyValue(ref _VanillaPageTitle, value); }
 
-        public override string DefaultPageTitle { get; set; }
+        public string DefaultVanillaTitle { get; set; }
 
         public override int Index { get => (int)Tab; set { } }
 
         public override bool Visible { get => true; set  { } }
 
+        public string VanillaPageOverride { get => _VanillaPageOverride; set => SetPropertyValue(ref _VanillaPageOverride, value); }
+
         public override bool IsVanilla => true;
 
         public override GameMenuTabs Tab => _Tab;
 
-        public VanillaTabConfig(GameMenuExtenderConfig.VanillaTabConfig tabConfig)
+        public VanillaTabConfig(Serialization.VanillaTabCfg tabConfig)
             : base(tabConfig)
         {
-            _VanillaPageVisible = tabConfig.VanillaPageVisible;
+            //_HideVanillaPage = !tabConfig.VanillaPageVisible;
             _VanillaPageIndex = tabConfig.VanillaPageIndex;
             _VanillaPageTitle = tabConfig.VanillaPageTitle;
             _Tab = tabConfig.MenuTab;
@@ -44,21 +47,22 @@ namespace GameMenuExtender.Configs
         public VanillaTabConfig(VanillaTab tab)
             : base(tab)
         {
-            _DefaultPage = tab.VanillaPage.Name;
-            _VanillaPageVisible = true;
+            //_DefaultPage = tab.VanillaPage.Name;
+            //_HideVanillaPage = false;
             _VanillaPageTitle = tab.Label;
             _VanillaPageIndex = 0;
             _Tab = tab.TabName;
         }
 
-        public override GameMenuExtenderConfig.TabConfig GetConfigObject()
+        public override Serialization.TabCfgBase GetJsonObject()
         {
-            return new GameMenuExtenderConfig.VanillaTabConfig()
+            return new Serialization.VanillaTabCfg()
             {
-                DefaultPage = DefaultPage,
+                VanillaPageOverride = VanillaPageOverride,
                 Title = (!string.IsNullOrEmpty(DefaultTitle) && DefaultTitle == Title) ? null : Title,
-                VanillaPageVisible = PageVisible,
-                VanillaPageTitle = (!string.IsNullOrEmpty(DefaultPageTitle) && DefaultPageTitle == PageTitle) ? null : PageTitle
+                //VanillaPageVisible = !HideVanillaPage,
+                VanillaPageTitle = (!string.IsNullOrEmpty(DefaultVanillaTitle) && DefaultVanillaTitle == VanillaPageTitle) ? null : VanillaPageTitle,
+                VanillaPageIndex = VanillaPageIndex
             };
         }
     }

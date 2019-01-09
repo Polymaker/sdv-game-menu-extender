@@ -22,17 +22,15 @@ namespace GameMenuExtender
 		{
             MenuManager = new GameMenuManager(this);
             ApiInstance = new GameMenuExtenderAPI(this);
-            Configs = new ConfigManager(this);
+            Configs = new ConfigManager();
             Helper.Events.GameLoop.SaveLoaded += SaveEvents_AfterLoad;
             Instance = this;
         }
 
 		private void SaveEvents_AfterLoad(object sender, SaveLoadedEventArgs e)
 		{
-            Configs.LoadConfigs();
+            Configs.Reload();
             MenuManager.Initialize();
-            MenuManager.InitializeCompatibilityFixes();
-
         }
 
 		public override object GetApi()

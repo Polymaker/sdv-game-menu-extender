@@ -13,7 +13,7 @@ namespace GameMenuExtender.UI
     public class TabConfigControl : SdvContainerControl
     {
         public GameMenuTab MenuTab { get; set; }
-        public GameMenuTabConfig TabConfig { get; /*set;*/ }
+        public MenuTabConfig TabConfig { get; /*set;*/ }
 
         private SdvLabel TabNameLabel;
         private SdvCheckbox VisibleCheckbox;
@@ -22,7 +22,7 @@ namespace GameMenuExtender.UI
         public TabConfigControl(GameMenuTab tab)
         {
             MenuTab = tab;
-            TabConfig = (GameMenuTabConfig)tab.Configuration;
+            TabConfig = (MenuTabConfig)tab.Configuration;
 
             PageControls = new List<TabPageConfigControl>();
             Padding = new Polymaker.SdvUI.Padding(8, 2, 0, 2);
@@ -88,7 +88,7 @@ namespace GameMenuExtender.UI
             TabNameLabel.Text = $"Tab: {cleanTitle}";
             VisibleCheckbox.Checked = TabConfig.Visible;
 
-            TabConfig.TabPages = GameMenuExtenderMod.Instance.Configs.GetTabPagesConfig(TabConfig);
+            //TabConfig.TabPages = GameMenuExtenderMod.Instance.Configs.GetTabPagesConfig(TabConfig);
             var ctrlHeight = PageControls[0].Height;
 
             foreach (var pageCtrl in PageControls)

@@ -7,58 +7,64 @@ using System.Threading.Tasks;
 
 namespace GameMenuExtender.Configs
 {
-    public class CustomTabPageConfig : ConfigBase, IMenuTabPageConfig
+    public class CustomTabPageConfig : MenuTabPageConfig
     {
         private bool _Visible;
         private string _Title;
         private int _Index;
         private bool _IsNonAPI;
+        private bool _IsVanillaReplacement;
 
-        public string TabName { get; private set; }
-        public string Name { get; private set; }
-        public string ModID => Name.Split(':')[0];
-        public bool Visible { get => _Visible; set => SetPropertyValue(ref _Visible, value); }
-        public string Title { get => string.IsNullOrEmpty(_Title) ? DefaultTitle  : _Title; set => SetPropertyValue(ref _Title, value); }
-        public int Index { get => _Index; set => SetPropertyValue(ref _Index, value); }
+        public override bool Visible { get => _Visible; set => SetPropertyValue(ref _Visible, value); }
 
-        public string DefaultTitle { get; set; }
-        public bool IsNonAPI { get => _IsNonAPI; set { _Visible = value; OnPropertyChanged(nameof(IsNonAPI)); } }
+        public override string Title { get => string.IsNullOrEmpty(_Title) ? DefaultTitle  : _Title; set => SetPropertyValue(ref _Title, value); }
 
-        public bool IsVanilla => false;
+        public override int Index { get => _Index; set => SetPropertyValue(ref _Index, value); }
 
-        public bool IsCustom => true;   
+        public bool IsNonAPI
+        {
+            get => _IsNonAPI;
+            set => SetPropertyValue(ref _IsNonAPI, value);
+        }
+
+        public bool IsVanillaReplacement
+        {
+            get => _IsVanillaReplacement;
+            set => SetPropertyValue(ref _IsVanillaReplacement, value);
+        }
+
+        public override bool IsVanilla => false;
 
         public CustomTabPageConfig(GameMenuTabPage tabPage)
+            : base(tabPage.Name, tabPage.Tab.Name)
         {
             IsNew = true;
-            TabName = tabPage.Tab.Name;
-            Name = tabPage.Name;
             _Visible = true;
             _Title = tabPage.Label;
             DefaultTitle = tabPage.Label;
             _IsNonAPI = (tabPage is CustomTabPage tp && tp.IsNonAPI);
         }
 
-        public CustomTabPageConfig(GameMenuExtenderConfig.CustomTabPageConfig pageConfig)
+        public CustomTabPageConfig(Serialization.CustomPageCfg pageConfig)
+            : base(pageConfig.Name, pageConfig.TabName)
         {
             IsNew = false;
-            TabName = pageConfig.TabName;
-            Name = pageConfig.Name;
             _Visible = pageConfig.Visible;
             _Title = pageConfig.Title;
             _Index = pageConfig.Index;
             _IsNonAPI = pageConfig.IsNonAPI;
         }
 
-        public GameMenuExtenderConfig.CustomTabPageConfig GetConfigObject()
+        public Serialization.CustomPageCfg GetJsonObject()
         {
-            return new GameMenuExtenderConfig.CustomTabPageConfig()
+            return new Serialization.CustomPageCfg()
             {
                 Name = Name,
                 Title = (!string.IsNullOrEmpty(DefaultTitle) && DefaultTitle == Title) ? null : Title,
                 Index = Index,
                 Visible = Visible,
-                IsNonAPI = IsNonAPI
+                IsNonAPI = IsNonAPI,
+                VanillaReplacement = IsVanillaReplacement
             };
         }
     }

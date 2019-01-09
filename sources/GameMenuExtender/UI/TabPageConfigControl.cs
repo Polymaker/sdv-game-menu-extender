@@ -92,10 +92,10 @@ namespace GameMenuExtender.UI
         {
             PageConfig.Visible = VisibleCheckbox.Checked;
 
-            if (!PageConfig.Visible && GameMenuElement.NameEquals(MenuTab.Configuration.DefaultPage, PageConfig.Name))
-            {
-                MenuTab.Configuration.DefaultPage = MenuTab.TabPages.FirstOrDefault(p=>p.Visible).Name;
-            }
+            //if (!PageConfig.Visible && GameMenuElement.NameEquals(MenuTab.Configuration.DefaultPage, PageConfig.Name))
+            //{
+            //    MenuTab.Configuration.DefaultPage = MenuTab.TabPages.FirstOrDefault(p=>p.Visible).Name;
+            //}
 
             OnConfigChanged();
         }

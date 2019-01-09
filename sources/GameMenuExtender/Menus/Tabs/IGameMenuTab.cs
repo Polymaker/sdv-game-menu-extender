@@ -9,6 +9,6 @@ namespace GameMenuExtender.Menus
 {
     public interface IGameMenuTab
     {
-        GameMenuTabConfig Configuration { get; }
+        MenuTabConfig Configuration { get; }
     }
 }

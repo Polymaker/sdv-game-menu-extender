@@ -24,7 +24,7 @@ namespace GameMenuExtender.Menus
 
         public VanillaTabPage VanillaPage => TabPages.OfType<VanillaTabPage>().FirstOrDefault();
 
-        //public VanillaTabConfig Configuration => Config as VanillaTabConfig;
+        public new VanillaTabConfig Configuration => base.Configuration as VanillaTabConfig;
 
         internal GameMenuPageExtender PageExtender { get; private set; }
 
@@ -33,26 +33,9 @@ namespace GameMenuExtender.Menus
 			TabIndex = index;
             TabButton = tab;
             Label = tab.label;
-            UniqueID = $"StardewValley::{tab.name}";
+            UniqueID = $"StardewValley:{tab.name}";
             PageExtender = new GameMenuPageExtender(this);
         }
-
-		internal VanillaTab(GameMenuManager manager, int index, GameMenuTabs tab) : base(manager, tab.ToString().ToLower())
-		{
-			TabIndex = index;
-			//TabButton = tab;
-			//Label = tab.label;
-			UniqueID = $"StardewValley::{tab.ToString().ToLower()}";
-			//PageExtender = new GameMenuPageExtender(this);
-		}
-
-		internal void Initialize(ClickableComponent tab, IClickableMenu page)
-		{
-			TabButton = tab;
-			Label = tab.label;
-			PageExtender = new GameMenuPageExtender(this);
-
-		}
 
 		internal void InitializeLayout()
 		{
@@ -64,7 +47,7 @@ namespace GameMenuExtender.Menus
 			IsTabButtonOffseted = false;
 		}
 
-		internal void RebuildLayoutForCurrentTab()
+        internal void RebuildLayoutForCurrentTab()
 		{
 			if (Manager.CurrentTab != null && Manager.CurrentTabPage.PageWindow != null)
 			{
@@ -91,7 +74,14 @@ namespace GameMenuExtender.Menus
 			}
 		}
 
-		internal static Type GetDefaultTabPageType(GameMenuTabs tab)
+        public override void LoadConfig()
+        {
+            base.LoadConfig();
+            if (TabButton != null)
+                TabButton.label = Label;
+        }
+
+        internal static Type GetDefaultTabPageType(GameMenuTabs tab)
 		{
 			switch (tab)
 			{

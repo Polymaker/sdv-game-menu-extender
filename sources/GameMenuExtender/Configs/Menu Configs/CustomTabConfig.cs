@@ -7,24 +7,17 @@ using System.Threading.Tasks;
 
 namespace GameMenuExtender.Configs
 {
-    public class CustomTabConfig : GameMenuTabConfig
+    public class CustomTabConfig : MenuTabConfig
     {
         private int _Index;
         private bool _Visible;
 
         public override int Index { get => _Index; set => SetPropertyValue(ref _Index, value); }
         public override bool Visible { get => _Visible; set => SetPropertyValue(ref _Visible, value); }
-
         public override bool IsVanilla => false;
         public override GameMenuTabs Tab => GameMenuTabs.Custom;
 
-        public override string PageTitle { get { return null; } set { } }
-        public override string DefaultPageTitle { get { return null; } set { } }
-        public override bool PageVisible { get { return false; } set { } }
-        public override int PageIndex { get { return -1; } set { } }
-        public string ModID => Name.Split(':')[0];
-
-        public CustomTabConfig(GameMenuExtenderConfig.CustomTabConfig tabConfig)
+        public CustomTabConfig(Serialization.CustomTabCfg tabConfig)
             : base(tabConfig)
         {
             _Index = tabConfig.Index;
@@ -38,15 +31,14 @@ namespace GameMenuExtender.Configs
             IsNew = true;
         }
 
-        public override GameMenuExtenderConfig.TabConfig GetConfigObject()
+        public override Serialization.TabCfgBase GetJsonObject()
         {
-            return new GameMenuExtenderConfig.CustomTabConfig()
+            return new Serialization.CustomTabCfg()
             {
                 Index = Index,
                 Name = Name,
                 Title = (!string.IsNullOrEmpty(DefaultTitle) && DefaultTitle == Title) ? null : Title,
-                Visible = Visible,
-                DefaultPage = DefaultPage
+                Visible = Visible
             };
         }
     }

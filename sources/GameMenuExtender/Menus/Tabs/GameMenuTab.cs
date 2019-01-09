@@ -27,7 +27,7 @@ namespace GameMenuExtender.Menus
 
         public IEnumerable<GameMenuTabPage> VisibleTabPages
         {
-            get { return _TabPages.Where(p => p.Visible); }
+            get { return _TabPages.Where(p => p.IsVisible()); }
         }
 
         protected List<GameMenuTabPage> PageList => _TabPages;
@@ -36,22 +36,20 @@ namespace GameMenuExtender.Menus
 
         public GameMenuTabPage CurrentTabPage => (CurrentTabPageIndex >= 0 && CurrentTabPageIndex < TabPages.Count) ? TabPages[CurrentTabPageIndex] : null;
 
-        public bool TabPageInitialized => CurrentTabPage != null && CurrentTabPage.Visible;
+        public bool TabPageInitialized => CurrentTabPage != null && CurrentTabPage.IsVisible();
 
-        //public GameMenuTabConfig Config { get; private set; }
+        public MenuTabConfig Configuration { get; private set; }
 
-        public IMenuTabConfig Configuration { get; private set; }
-
-        public override bool Visible
-        {
-            get => Configuration?.Visible ?? base.Visible;
-            set
-            {
-                if (Configuration != null)
-                    Configuration.Visible = value;
-                base.Visible = value;
-            }
-        }
+        //public override bool Visible
+        //{
+        //    get => Configuration?.Visible ?? base.Visible;
+        //    set
+        //    {
+        //        if (Configuration != null)
+        //            Configuration.Visible = value;
+        //        base.Visible = value;
+        //    }
+        //}
 
         internal GameMenuTab(GameMenuManager manager, string name) : base(manager, name)
         {
@@ -73,27 +71,13 @@ namespace GameMenuExtender.Menus
 
 			for (int i = 0; i < TabPages.Count; i++)
 			{
-				if (TabPages[i].Visible)
+				if (TabPages[i].IsVisible())
 				{
 					CurrentTabPageIndex = i;
 					break;
 				}
 			}
 		}
-
-        internal void SelectDefaultPage()
-        {
-            CurrentTabPageIndex = 0;
-
-            for (int i = 0; i < TabPages.Count; i++)
-            {
-                if (TabPages[i].NameEquals(Configuration.DefaultPage))
-                {
-                    CurrentTabPageIndex = i;
-                    break;
-                }
-            }
-        }
 
         public void SelectTabPage(GameMenuTabPage page)
         {
@@ -102,16 +86,19 @@ namespace GameMenuExtender.Menus
 
 		public void SelectTabPage(int index)
 		{
-			CurrentTabPageIndex = index;
-
-            if (IsSelected)
+            if (CurrentTabPageIndex != index)
             {
-                Manager.CurrentTabReal.RebuildLayoutForCurrentTab();
-                Manager.OnCurrentTabPageChanged();
+                CurrentTabPageIndex = index;
+
+                if (IsSelected)
+                {
+                    Manager.CurrentTabReal.RebuildLayoutForCurrentTab();
+                    Manager.OnCurrentTabPageChanged();
+                }
             }
         }
 
-        public void LoadConfig()
+        public virtual void LoadConfig()
         {
             Configuration = Manager.Mod.Configs.LoadOrCreateConfig(this);
             Label = Configuration.Title;
@@ -119,19 +106,19 @@ namespace GameMenuExtender.Menus
 
         public void OrganizeTabPages()
         {
-            int currentIndex = 0;
+            //int currentIndex = 0;
 
-            foreach (var page in TabPages.OrderBy(p => p.DisplayIndex))
-            {
-                page.DisplayIndex = currentIndex++;
-            }
-
-            //foreach(var page in TabPages.OrderByDescending(p => p.NameEquals(Configuration.DefaultPage)).ThenBy(p => p.DisplayIndex))
+            //foreach (var page in TabPages.OrderBy(p => p.DisplayIndex))
             //{
             //    page.DisplayIndex = currentIndex++;
             //}
 
             _TabPages = _TabPages.OrderBy(p => p.DisplayIndex).ToList();
+        }
+
+        public bool IsVisible()
+        {
+            return Configuration.Visible && Visible;
         }
 	}
 }
