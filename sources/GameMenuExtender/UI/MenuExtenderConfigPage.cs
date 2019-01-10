@@ -44,16 +44,16 @@ namespace GameMenuExtender.UI
             };
             Controls.Add(mainLabel);
 
-            ReloadButton = new SdvButton() { Text = "Reload", Font = Game1.smallFont };
+            ReloadButton = new SdvButton() { Text = "Reload" };
             ReloadButton.X = ClientRectangle.Width - ReloadButton.Width - GAME_MENU_BORDER - 8;
-            ReloadButton.Y = GAME_MENU_BORDER + 8;
+            ReloadButton.Y = GAME_MENU_BORDER + 16;
             ReloadButton.Padding = new Polymaker.SdvUI.Padding(16, 4, 16, 4);
             Controls.Add(ReloadButton);
             ReloadButton.MouseClick += ReloadButton_MouseClick;
 
-            SaveButton = new SdvButton() { Text = "Save", Font = Game1.smallFont };
-            SaveButton.X = ReloadButton.X - SaveButton.Width - 16;
-            SaveButton.Y = GAME_MENU_BORDER + 8;
+            SaveButton = new SdvButton() { Text = "Save"};
+            SaveButton.X = ReloadButton.X - SaveButton.Width - 8;
+            SaveButton.Y = GAME_MENU_BORDER + 16;
             SaveButton.Padding = new Polymaker.SdvUI.Padding(16, 4, 16, 4);
             Controls.Add(SaveButton);
             SaveButton.MouseClick += SaveButton_MouseClick;

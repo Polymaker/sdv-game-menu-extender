@@ -2,6 +2,7 @@
 using GameMenuExtender.Menus;
 using Polymaker.SdvUI;
 using Polymaker.SdvUI.Controls;
+using Polymaker.SdvUI.Drawing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,14 +21,16 @@ namespace GameMenuExtender.UI
         private SdvButton EditNameBtn;
         private SdvButton UpArrowBtn;
         private SdvButton DownArrowBtn;
+        private bool CanShowArrows;
 
         public event EventHandler ConfigChanged;
+        public event EventHandler MoveUpClicked;
+        public event EventHandler MoveDownClicked;
 
         public TabPageConfigControl(MenuTabConfig tabConfig, MenuTabPageConfig pageConfig)
         {
             TabConfig = tabConfig;
             PageConfig = pageConfig;
-            Padding = new Polymaker.SdvUI.Padding(8, 2, 0, 2);
         }
 
         protected override void OnInitialize()
@@ -35,68 +38,80 @@ namespace GameMenuExtender.UI
             base.OnInitialize();
 
             PageNameLabel = new SdvLabel() {
-                X = 32,
+                X = 76,
+                Y = 2,
                 Font = new SdvFont(StardewValley.Game1.smallFont, false, true)
             };
             Controls.Add(PageNameLabel);
 
             EditNameBtn = new SdvButton()
             {
-                X = 300,
-                Text = "Edit",
-                Font = new SdvFont(StardewValley.Game1.smallFont, false, false, 0.8f),
-                Padding = new Polymaker.SdvUI.Padding(8)
+                X = 400,
+                Y = 0,
+                Text = "Rename",
+                Padding = new Polymaker.SdvUI.Padding(8, 4, 8, 0),
+                Visible = false
             };
             Controls.Add(EditNameBtn);
 
 
             DownArrowBtn = new SdvButton()
             {
+                Y = 2,
                 Padding = new Polymaker.SdvUI.Padding(8),
-                X = 10
+                Image = SdvImages.DownArrow,
+                ImageScale = 2f,
             };
-            var img = SdvImages.DownArrow;
-            img.Scale = 2f;
-            DownArrowBtn.Image = img;
-
+            DownArrowBtn.Click += DownArrowBtn_Click;
             Controls.Add(DownArrowBtn);
-            DownArrowBtn.X = ClientRectangle.Width - DownArrowBtn.Width - 8;
-
+            
             UpArrowBtn = new SdvButton()
             {
+                Y = 2,
                 Padding = new Polymaker.SdvUI.Padding(8),
-                X = DownArrowBtn.X - DownArrowBtn.Width - 8
+                Image = SdvImages.UpArrow,
+                ImageScale = 2f,
             };
-            img = SdvImages.UpArrow;
-            img.Scale = 2f;
-            UpArrowBtn.Image = img;
-            
+            UpArrowBtn.Click += UpArrowBtn_Click;
             Controls.Add(UpArrowBtn);
+
+            //DownArrowBtn.X = ClientRectangle.Width - DownArrowBtn.Width - 8;
+            //UpArrowBtn.X = DownArrowBtn.X - UpArrowBtn.Width - 8;
+
+            UpArrowBtn.X = ClientRectangle.Width - UpArrowBtn.Width - 8;
+            DownArrowBtn.X = UpArrowBtn.X - DownArrowBtn.Width - 8;
 
             VisibleCheckbox = new SdvCheckbox()
             {
-                Text = "Visible",
+                //Text = "Hide",
+                Y = 2,
+                TooltipText = "Enabled",
                 Checked = PageConfig.Visible
             };
-
-            VisibleCheckbox.CheckChanged += VisibleCheckbox_CheckChanged;
-            VisibleCheckbox.X = UpArrowBtn.X - VisibleCheckbox.Width - 16;
             Controls.Add(VisibleCheckbox);
 
-            Height = GetPreferredSize().Y;
+            VisibleCheckbox.CheckChanged += VisibleCheckbox_CheckChanged;
+            //VisibleCheckbox.X = DownArrowBtn.X - VisibleCheckbox.Width - 16;
+            VisibleCheckbox.X = 32;
+
+            Height = 40;
             RefreshInfo();
+        }
+
+        private void UpArrowBtn_Click(object sender, EventArgs e)
+        {
+            MoveUpClicked?.Invoke(this, e);
+        }
+
+        private void DownArrowBtn_Click(object sender, EventArgs e)
+        {
+            MoveDownClicked?.Invoke(this, e);
         }
 
         private void VisibleCheckbox_CheckChanged(object sender, EventArgs e)
         {
             PageConfig.Visible = VisibleCheckbox.Checked;
-
-            //if (!PageConfig.Visible && GameMenuElement.NameEquals(MenuTab.Configuration.DefaultPage, PageConfig.Name))
-            //{
-            //    MenuTab.Configuration.DefaultPage = MenuTab.TabPages.FirstOrDefault(p=>p.Visible).Name;
-            //}
-
-            OnConfigChanged();
+            VisibleCheckbox.TooltipText = PageConfig.Visible ? "Enabled" : "Hidden";
         }
 
         public void RefreshInfo()
@@ -119,28 +134,19 @@ namespace GameMenuExtender.UI
             VisibleCheckbox.Enabled = !PageConfig.Visible || canHidePage;
             VisibleCheckbox.Checked = PageConfig.Visible;
 
-            UpdateArrowsVisibillity();
+            CanShowArrows = TabConfig.TabPages.Count(p => p.Visible) > 1;
+
 
             UpArrowBtn.Enabled = PageConfig.Index > 0;
             DownArrowBtn.Enabled = PageConfig.Index < visiblePageCount - 1;
         }
 
-        protected override void OnMouseEnter(EventArgs e)
-        {
-            base.OnMouseEnter(e);
-            UpdateArrowsVisibillity();
-        }
 
-        protected override void OnMouseLeave(EventArgs e)
+        protected override void OnDraw(SdvGraphics g)
         {
-            base.OnMouseLeave(e);
-            UpdateArrowsVisibillity();
-        }
-
-        private void UpdateArrowsVisibillity()
-        {
-            var visiblePageCount = TabConfig.TabPages.Count(p => p.Visible);
-            UpArrowBtn.Visible = DownArrowBtn.Visible = visiblePageCount > 1;// && (/*Focused ||*/ DisplayRectangle.Contains(CursorPosition));
+            UpArrowBtn.Visible = DownArrowBtn.Visible = CanShowArrows && (/*ContainsFocus || */MouseOver);
+            EditNameBtn.Visible = MouseOver;
+            base.OnDraw(g);
         }
 
         private void OnConfigChanged()
