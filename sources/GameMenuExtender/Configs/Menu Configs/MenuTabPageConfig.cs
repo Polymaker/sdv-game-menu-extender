@@ -14,7 +14,9 @@ namespace GameMenuExtender.Configs
 
         public abstract string Title { get; set; }
 
-        public virtual string DefaultTitle { get; set; }
+        //public virtual string DefaultTitle { get; set; }
+
+        public string DefaultTitle => ConfigManager.DefaultPageTitles.ContainsKey(Name) ? ConfigManager.DefaultPageTitles[Name] : string.Empty;
 
         public abstract bool Visible { get; set; }
 

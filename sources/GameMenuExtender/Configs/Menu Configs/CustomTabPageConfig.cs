@@ -41,7 +41,7 @@ namespace GameMenuExtender.Configs
             IsNew = true;
             _Visible = true;
             _Title = tabPage.Label;
-            DefaultTitle = tabPage.Label;
+            //DefaultTitle = tabPage.Label;
             _IsNonAPI = (tabPage is CustomTabPage tp && tp.IsNonAPI);
         }
 

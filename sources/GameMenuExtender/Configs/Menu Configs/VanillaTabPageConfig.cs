@@ -16,7 +16,7 @@ namespace GameMenuExtender.Configs
 
         public override string Title { get => string.IsNullOrEmpty(_Tab.VanillaPageTitle) ? DefaultTitle : _Tab.VanillaPageTitle; set => _Tab.VanillaPageTitle = value; }
 
-        public override string DefaultTitle { get => _Tab.DefaultVanillaTitle; set => _Tab.DefaultVanillaTitle = value; }
+        //public override string DefaultTitle { get => _Tab.DefaultVanillaTitle; set => _Tab.DefaultVanillaTitle = value; }
 
         public override bool IsVanilla => true;
 

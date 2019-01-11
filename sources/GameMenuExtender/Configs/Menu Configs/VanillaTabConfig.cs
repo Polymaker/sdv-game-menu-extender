@@ -23,7 +23,7 @@ namespace GameMenuExtender.Configs
 
         public string VanillaPageTitle { get => string.IsNullOrEmpty(_VanillaPageTitle) ? DefaultVanillaTitle : _VanillaPageTitle; set => SetPropertyValue(ref _VanillaPageTitle, value); }
 
-        public string DefaultVanillaTitle { get; set; }
+        public string DefaultVanillaTitle => ConfigManager.DefaultPageTitles.ContainsKey(Name) ? ConfigManager.DefaultPageTitles[Name] : string.Empty;
 
         public override int Index { get => (int)Tab; set { } }
 

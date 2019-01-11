@@ -21,7 +21,9 @@ namespace GameMenuExtender.Configs
         [Obsolete("The TabPage with index 0 is the default page.")]
         public string DefaultPage { get => _DefaultPage; set => SetPropertyValue(ref _DefaultPage, value); }
 
-        public string DefaultTitle { get; set; }
+        //public string DefaultTitle { get; set; }
+
+        public string DefaultTitle => ConfigManager.DefaultTabTitles.ContainsKey(Name) ? ConfigManager.DefaultTabTitles[Name] : string.Empty;
 
         public abstract bool Visible { get; set; }
 
@@ -49,7 +51,6 @@ namespace GameMenuExtender.Configs
         {
             Name = tab.Name;
             _Title = tab.Label;
-            DefaultTitle = tab.Label;
             IsNew = true;
         }
 

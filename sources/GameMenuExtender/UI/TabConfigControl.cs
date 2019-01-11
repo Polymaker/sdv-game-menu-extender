@@ -17,7 +17,9 @@ namespace GameMenuExtender.UI
         private SdvLabel TabNameLabel;
         private SdvCheckbox VisibleCheckbox;
         private SdvButton EditNameBtn;
+        private SdvComboBox VanillaOverrideCbo;
         private List<TabPageConfigControl> PageControls;
+        private bool IsLoading;
 
         private const int TabPageStartY = 40;
 
@@ -49,6 +51,17 @@ namespace GameMenuExtender.UI
                 Visible = false
             };
             Controls.Add(EditNameBtn);
+
+            VanillaOverrideCbo = new SdvComboBox()
+            {
+                X = EditNameBtn.Bounds.Right + 16,
+                Y = 0,
+                Width = 200,
+                Visible = TabConfig.TabPages.Count > 1
+            };
+            Controls.Add(VanillaOverrideCbo);
+            VanillaOverrideCbo.DataSource = TabConfig.TabPages;
+            VanillaOverrideCbo.DisplayMember = "Title";
 
             VisibleCheckbox = new SdvCheckbox()
             {
@@ -85,28 +98,14 @@ namespace GameMenuExtender.UI
                 Controls.Add(pageCtrl);
 
                 currentY += pageCtrl.Height;
-
-                pageCtrl.ConfigChanged += PageCtrl_ConfigChanged;
+                
                 pageCtrl.MoveUpClicked += PageCtrl_MoveUpClicked;
                 pageCtrl.MoveDownClicked += PageCtrl_MoveDownClicked;
+                pageCtrl.VisibilityChanged += PageCtrl_VisibilityChanged;
             }
         }
 
-        private void PageCtrl_MoveDownClicked(object sender, EventArgs e)
-        {
-            var pageCtrl = (TabPageConfigControl)sender;
-            if (pageCtrl.PageConfig.Index < PageControls.Count - 1)
-            {
-                var otherPage = PageControls[pageCtrl.PageConfig.Index + 1];
-                pageCtrl.PageConfig.Index += 1;
-                otherPage.PageConfig.Index -= 1;
-                
-                ReorderTabPages();
-
-                pageCtrl.RefreshInfo();
-                otherPage.RefreshInfo();
-            }
-        }
+        #region TabPage Controls Events
 
         private void PageCtrl_MoveUpClicked(object sender, EventArgs e)
         {
@@ -124,6 +123,29 @@ namespace GameMenuExtender.UI
             }
         }
 
+        private void PageCtrl_MoveDownClicked(object sender, EventArgs e)
+        {
+            var pageCtrl = (TabPageConfigControl)sender;
+            if (pageCtrl.PageConfig.Index < PageControls.Count - 1)
+            {
+                var otherPage = PageControls[pageCtrl.PageConfig.Index + 1];
+                pageCtrl.PageConfig.Index += 1;
+                otherPage.PageConfig.Index -= 1;
+
+                ReorderTabPages();
+
+                pageCtrl.RefreshInfo();
+                otherPage.RefreshInfo();
+            }
+        }
+
+        private void PageCtrl_VisibilityChanged(object sender, EventArgs e)
+        {
+            RefreshInfo();
+        }
+
+        #endregion
+
         private void ReorderTabPages()
         {
             var currentY = TabPageStartY;
@@ -135,28 +157,36 @@ namespace GameMenuExtender.UI
                 currentY += pageCtrl.Height;
             }
         }
-
-        private void PageCtrl_ConfigChanged(object sender, EventArgs e)
-        {
-            RefreshInfo();
-        }
+       
 
         private void VisibleCheckbox_CheckChanged(object sender, EventArgs e)
         {
-            TabConfig.Visible = VisibleCheckbox.Checked;
             VisibleCheckbox.TooltipText = TabConfig.Visible ? "Enabled" : "Hidden";
-            PageControls.ForEach(c => c.Enabled = TabConfig.Visible);
+            if (!IsLoading)
+            {
+                TabConfig.Visible = VisibleCheckbox.Checked;
+                RefreshInfo();
+            }
         }
 
         public void RefreshInfo()
         {
+            IsLoading = true;
+
             var cleanTitle = TabConfig.Title.Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
+
             TabNameLabel.Text = $"Tab: {cleanTitle}";
+
             VisibleCheckbox.Checked = TabConfig.Visible;
 
             ReorderTabPages();
             foreach (var pageCtrl in PageControls)
+            {
+                pageCtrl.Enabled = TabConfig.Visible;
                 pageCtrl.RefreshInfo();
+            }
+
+            IsLoading = false;
         }
 
         protected override void OnDraw(SdvGraphics g)

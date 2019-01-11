@@ -1,5 +1,4 @@
 ﻿using GameMenuExtender.Configs;
-using GameMenuExtender.Data;
 using StardewModdingAPI;
 using System;
 using System.Collections.Generic;
@@ -17,7 +16,7 @@ namespace GameMenuExtender.Menus
 
         public bool DrawText { get; set; }
 
-        public Icon TabIcon { get; set; }
+        public Polymaker.SdvUI.SdvImage TabIcon { get; set; }
 
         public override GameMenuTabs TabName => GameMenuTabs.Custom;
 

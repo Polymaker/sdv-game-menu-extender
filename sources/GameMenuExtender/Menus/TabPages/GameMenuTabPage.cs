@@ -20,7 +20,9 @@ namespace GameMenuExtender.Menus
 
         public virtual string Tooltip { get; set; }
 
-		public ClickableComponent TabPageButton { get; internal set; }
+        public Polymaker.SdvUI.SdvImage TabIcon { get; set; }
+
+        public ClickableComponent TabPageButton { get; internal set; }
 
 		public Type PageType { get; protected set; }
 

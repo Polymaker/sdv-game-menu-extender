@@ -86,7 +86,6 @@
     <Compile Include="Configs\Menu Configs\VanillaTabPageConfig.cs" />
     <Compile Include="Configs\Serialization\TabCfgBase.cs" />
     <Compile Include="Configs\Serialization\VanillaTabCfg.cs" />
-    <Compile Include="Data\Icon.cs" />
     <Compile Include="GameMenuExtenderMod.cs" />
     <Compile Include="Helpers\GameMenuHelper.cs" />
     <Compile Include="Menus\GameMenuPageExtender.cs" />

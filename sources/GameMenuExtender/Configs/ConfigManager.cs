@@ -19,6 +19,16 @@ namespace GameMenuExtender.Configs
 
         public IEnumerable<ConfigBase> AllConfigs => TabConfigs.OfType<ConfigBase>().Concat(TabPagesConfigs);
 
+        public static Dictionary<string, string> DefaultTabTitles { get; private set; }
+
+        public static Dictionary<string, string> DefaultPageTitles { get; private set; }
+
+        static ConfigManager()
+        {
+            DefaultTabTitles = new Dictionary<string, string>();
+            DefaultPageTitles = new Dictionary<string, string>();
+        }
+
         public void Reload()
         {
             TabConfigs.Clear();
@@ -144,13 +154,13 @@ namespace GameMenuExtender.Configs
                 }
             }
 
-            tabConfig.DefaultTitle = tab.Label;
+            if (!DefaultTabTitles.ContainsKey(tabConfig.Name))
+                DefaultTabTitles[tabConfig.Name] = tab.Label;
 
             if (tabConfig.IsVanilla)
             {
                 var vConf = (VanillaTabConfig)tabConfig;
                 var vTab = (VanillaTab)tab;
-                vConf.DefaultVanillaTitle = vTab.VanillaPage.Label;
             }
             
             return tabConfig;
@@ -165,7 +175,12 @@ namespace GameMenuExtender.Configs
                 var tabConfig = TabConfigs.FirstOrDefault(c => tabPage.Tab.NameEquals(c.Name));
 
                 if (tabPage.IsVanilla)
-                    return new VanillaTabPageConfig(tabConfig as VanillaTabConfig);
+                {
+                    var vanillaTabConfig = new VanillaTabPageConfig(tabConfig as VanillaTabConfig);
+                    if (!DefaultPageTitles.ContainsKey(vanillaTabConfig.Name))
+                        DefaultPageTitles[vanillaTabConfig.Name] = tabPage.Label;
+                    return vanillaTabConfig;
+                }
 
                 tabPageConfig = new CustomTabPageConfig(tabPage)
                 {
@@ -178,7 +193,8 @@ namespace GameMenuExtender.Configs
                 TabPagesConfigs.Add(tabPageConfig);
             }
 
-            tabPageConfig.DefaultTitle = tabPage.Label;
+            if (!DefaultPageTitles.ContainsKey(tabPageConfig.Name))
+                DefaultPageTitles[tabPageConfig.Name] = tabPage.Label;
 
             return tabPageConfig;
         }
@@ -235,22 +251,27 @@ namespace GameMenuExtender.Configs
                 configs.Save();
         }
 
-        //TODO: find a cleaner way to store the default titles
-        public void LoadDefaultTitles()
-        {
-            foreach(var tab in TabConfigs)
-            {
-                var loadedTab = GameMenuExtenderMod.Instance.MenuManager.Configuration.TabConfigs.FirstOrDefault(t => t.Name == tab.Name);
-                tab.DefaultTitle = loadedTab?.DefaultTitle;
-                if (tab is VanillaTabConfig vTab)
-                    vTab.DefaultVanillaTitle = ((VanillaTabConfig)loadedTab).DefaultVanillaTitle;
-            }
+        ////TODO: find a cleaner way to store the default titles
+        //public void LoadDefaultTitles()
+        //{
+        //    foreach(var tab in TabConfigs)
+        //    {
+        //        if (DefaultTabTitles.ContainsKey(tab.Name))
+        //            tab.DefaultTitle = DefaultTabTitles[tab.Name];
+        //        //var loadedTab = GameMenuExtenderMod.Instance.MenuManager.Configuration.TabConfigs.FirstOrDefault(t => t.Name == tab.Name);
+        //        //tab.DefaultTitle = loadedTab?.DefaultTitle;
+        //        if (tab is VanillaTabConfig vTab)
+        //            vTab.DefaultVanillaTitle = tab.DefaultTitle;
+        //    }
 
-            foreach (var page in TabPagesConfigs)
-            {
-                var loadedPage = GameMenuExtenderMod.Instance.MenuManager.Configuration.TabPagesConfigs.FirstOrDefault(p => p.Name == page.Name);
-                page.DefaultTitle = loadedPage?.DefaultTitle;
-            }
-        }
+        //    foreach (var page in TabPagesConfigs)
+        //    {
+        //        if (DefaultPageTitles.ContainsKey(page.Name))
+        //            page.DefaultTitle = DefaultPageTitles[page.Name];
+
+        //        //var loadedPage = GameMenuExtenderMod.Instance.MenuManager.Configuration.TabPagesConfigs.FirstOrDefault(p => p.Name == page.Name);
+        //        //page.DefaultTitle = loadedPage?.DefaultTitle;
+        //    }
+        //}
     }
 }

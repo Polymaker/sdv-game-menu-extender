@@ -32,7 +32,7 @@ namespace GameMenuExtender.UI
         internal void IntiliazeMenu()
         {
             CurrentConfigs = ConfigManager.Load();
-            CurrentConfigs.LoadDefaultTitles();
+            //CurrentConfigs.LoadDefaultTitles();
             ConfigManager.ValidateAndAdjustTabsConfigs(CurrentConfigs, false);
 
             var mainLabel = new SdvLabel()
@@ -76,7 +76,7 @@ namespace GameMenuExtender.UI
         private void ReloadButton_MouseClick(object sender, Polymaker.SdvUI.MouseEventArgs e)
         {
             CurrentConfigs.Reload();
-            CurrentConfigs.LoadDefaultTitles();
+            //CurrentConfigs.LoadDefaultTitles();
             ConfigManager.ValidateAndAdjustTabsConfigs(CurrentConfigs, false);
             ReloadConfigs();
         }

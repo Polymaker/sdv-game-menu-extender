@@ -16,16 +16,19 @@ namespace GameMenuExtender.UI
         public MenuTabConfig TabConfig { get; }
         public MenuTabPageConfig PageConfig { get; /*set;*/ }
 
+
         private SdvLabel PageNameLabel;
         private SdvCheckbox VisibleCheckbox;
         private SdvButton EditNameBtn;
         private SdvButton UpArrowBtn;
         private SdvButton DownArrowBtn;
         private bool CanShowArrows;
+        private bool IsLoading;
 
         public event EventHandler ConfigChanged;
         public event EventHandler MoveUpClicked;
         public event EventHandler MoveDownClicked;
+        public event EventHandler VisibilityChanged;
 
         public TabPageConfigControl(MenuTabConfig tabConfig, MenuTabPageConfig pageConfig)
         {
@@ -110,12 +113,18 @@ namespace GameMenuExtender.UI
 
         private void VisibleCheckbox_CheckChanged(object sender, EventArgs e)
         {
-            PageConfig.Visible = VisibleCheckbox.Checked;
             VisibleCheckbox.TooltipText = PageConfig.Visible ? "Enabled" : "Hidden";
+
+            if (!IsLoading)
+            {
+                PageConfig.Visible = VisibleCheckbox.Checked;
+                OnVisibilityChanged();
+            }
         }
 
         public void RefreshInfo()
         {
+            IsLoading = true;
             var cleanTitle = (PageConfig.Title ?? "Not set").Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
             PageNameLabel.Text = $"Page: {cleanTitle}";
 
@@ -135,10 +144,11 @@ namespace GameMenuExtender.UI
             VisibleCheckbox.Checked = PageConfig.Visible;
 
             CanShowArrows = TabConfig.TabPages.Count(p => p.Visible) > 1;
-
-
+      
             UpArrowBtn.Enabled = PageConfig.Index > 0;
             DownArrowBtn.Enabled = PageConfig.Index < visiblePageCount - 1;
+
+            IsLoading = false;
         }
 
 
@@ -152,6 +162,11 @@ namespace GameMenuExtender.UI
         private void OnConfigChanged()
         {
             ConfigChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnVisibilityChanged()
+        {
+            VisibilityChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }
