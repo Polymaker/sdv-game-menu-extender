@@ -226,6 +226,7 @@ namespace GameMenuExtender.Menus
                 {
                     //Monitor.Log($"A mod has overrided a tab page late!");
                     RegisterNonApiTabPage(CurrentTabReal, GameMenuPageList[ActiveGameMenu.currentTab]);
+                    CurrentTab.SelectFirstPage();
                     GameMenuPageList[ActiveGameMenu.currentTab] = CurrentTabReal.PageExtender;
                 }
             }
@@ -415,8 +416,10 @@ namespace GameMenuExtender.Menus
                         string.IsNullOrEmpty(tab.Configuration.VanillaPageOverride))
                     {
                         tab.Configuration.VanillaPageOverride = customTabPage.Name;
-                        Configuration.Save();
+                        tab.VanillaPage.Visible = false;
                     }
+
+                    Configuration.Save();
                 }
                 else
                     customTabPage.PageWindow = customPage;
@@ -647,10 +650,7 @@ namespace GameMenuExtender.Menus
             var newTabPage = new CustomTabPage(foundTab, source, uniqueName, pageLabel, pageMenuClass) { IsNonAPI = !byAPI };
 
             newTabPage.LoadConfig();
-            if (newTabPage.IsNonAPI)
-            {
-                //newTabPage.Configuration.
-            }
+
             return newTabPage;
         }
 

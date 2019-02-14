@@ -93,8 +93,38 @@ namespace GameMenuExtender.UI
             ConfigListPanel.Controls.Clear();
             TabConfigControls.Clear();
             var currentY = 0;
+
+            var vanillaTabLbl = new SdvLabel()
+            {
+                Font = SdvFont.OptionFont,
+                Text = "Default Tabs",
+                Y = currentY,
+                AutoSize = true
+            };
+
+            vanillaTabLbl.Padding = new Polymaker.SdvUI.Padding(6, 0, 0, 0);
+            ConfigListPanel.Controls.Add(vanillaTabLbl);
+            currentY += vanillaTabLbl.Height;
+
+            bool customLblCreated = false;
+
             foreach (var tab in CurrentConfigs.TabConfigs)
             {
+                if (tab.IsCustom && !customLblCreated)
+                {
+                    var customTabLbl = new SdvLabel()
+                    {
+                        Font = SdvFont.OptionFont,
+                        Text = "Custom Tabs",
+                        Y = currentY,
+                        AutoSize = true
+                    };
+
+                    customTabLbl.Padding = new Polymaker.SdvUI.Padding(6, 0, 0, 0);
+                    ConfigListPanel.Controls.Add(customTabLbl);
+                    currentY += customTabLbl.Height;
+                    customLblCreated = true;
+                }
 
                 var tabConfigCtrl = new TabConfigControl(tab)
                 {

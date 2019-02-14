@@ -13,9 +13,9 @@ namespace GameMenuExtender.Configs
     {
         private static IMod Mod => GameMenuExtenderMod.Instance;
 
-        public List<MenuTabConfig> TabConfigs { get; } = new List<MenuTabConfig>();
+        public ConfigCollection<MenuTabConfig> TabConfigs { get; }
 
-        public List<CustomTabPageConfig> TabPagesConfigs { get; } = new List<CustomTabPageConfig>();
+        public ConfigCollection<CustomTabPageConfig> TabPagesConfigs { get; }
 
         public IEnumerable<ConfigBase> AllConfigs => TabConfigs.OfType<ConfigBase>().Concat(TabPagesConfigs);
 
@@ -27,6 +27,12 @@ namespace GameMenuExtender.Configs
         {
             DefaultTabTitles = new Dictionary<string, string>();
             DefaultPageTitles = new Dictionary<string, string>();
+        }
+
+        public ConfigManager()
+        {
+            TabConfigs = new ConfigCollection<MenuTabConfig>(this);
+            TabPagesConfigs = new ConfigCollection<CustomTabPageConfig>(this);
         }
 
         public void Reload()

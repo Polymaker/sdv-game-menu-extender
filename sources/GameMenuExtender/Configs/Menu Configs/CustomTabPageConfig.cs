@@ -60,7 +60,7 @@ namespace GameMenuExtender.Configs
             return new Serialization.CustomPageCfg()
             {
                 Name = Name,
-                Title = (!string.IsNullOrEmpty(DefaultTitle) && DefaultTitle == Title) ? null : Title,
+                Title = (!string.IsNullOrEmpty(DefaultTitle) && DefaultTitle == Title && !IsNonAPI) ? null : Title,
                 Index = Index,
                 Visible = Visible,
                 IsNonAPI = IsNonAPI,

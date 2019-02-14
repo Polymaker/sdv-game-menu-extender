@@ -10,12 +10,20 @@ namespace GameMenuExtender.Configs
 {
     public class ConfigBase : INotifyPropertyChanged
     {
+        internal ConfigManager Manager { get; set; }
         private bool _HasChanged;
         private List<string> _ChangedProperties = new List<string>();
         public bool IsNew { get; set; }
         public bool HasChanged { get => _HasChanged || IsNew; private set => _HasChanged = value; }
         public IList<string> ChangedProperties => _ChangedProperties.AsReadOnly();
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public ConfigBase() { }
+
+        internal ConfigBase(ConfigManager manager)
+        {
+            Manager = manager;
+        }
 
         protected virtual void OnPropertyChanged(string propertyName)
         {

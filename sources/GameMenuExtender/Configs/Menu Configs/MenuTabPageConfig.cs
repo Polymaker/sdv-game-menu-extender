@@ -14,6 +14,8 @@ namespace GameMenuExtender.Configs
 
         public abstract string Title { get; set; }
 
+        public MenuTabConfig Tab => Manager?.TabConfigs.FirstOrDefault(t => t.Name == TabName);
+
         //public virtual string DefaultTitle { get; set; }
 
         public string DefaultTitle => ConfigManager.DefaultPageTitles.ContainsKey(Name) ? ConfigManager.DefaultPageTitles[Name] : string.Empty;
@@ -21,6 +23,8 @@ namespace GameMenuExtender.Configs
         public abstract bool Visible { get; set; }
 
         public abstract int Index { get; set; }
+
+        public string DisplayName => IsVanilla ? "None" : Title;
 
         protected MenuTabPageConfig(string name, string tabName)
             : base(name)

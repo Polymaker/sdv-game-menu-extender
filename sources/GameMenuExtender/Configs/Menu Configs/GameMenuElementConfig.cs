@@ -19,6 +19,12 @@ namespace GameMenuExtender.Configs
             ModID = uniqueID.Contains(":") ? uniqueID.Split(':')[0] : "StardewValley";
         }
 
+        internal GameMenuElementConfig(ConfigManager manager, string uniqueID) : base(manager)
+        {
+            UniqueID = uniqueID;
+            ModID = uniqueID.Contains(":") ? uniqueID.Split(':')[0] : "StardewValley";
+        }
+
         public bool NameEquals(string name)
         {
             return UniqueID.Trim().Equals(name?.Trim(), StringComparison.InvariantCultureIgnoreCase);

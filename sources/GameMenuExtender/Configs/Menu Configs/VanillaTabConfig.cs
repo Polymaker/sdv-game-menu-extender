@@ -31,6 +31,8 @@ namespace GameMenuExtender.Configs
 
         public string VanillaPageOverride { get => _VanillaPageOverride; set => SetPropertyValue(ref _VanillaPageOverride, value); }
 
+        public VanillaTabPageConfig VanillaPage => TabPages.FirstOrDefault(p => p.IsVanilla) as VanillaTabPageConfig;
+
         public override bool IsVanilla => true;
 
         public override GameMenuTabs Tab => _Tab;
@@ -39,6 +41,7 @@ namespace GameMenuExtender.Configs
             : base(tabConfig)
         {
             //_HideVanillaPage = !tabConfig.VanillaPageVisible;
+            _VanillaPageOverride = tabConfig.VanillaPageOverride;
             _VanillaPageIndex = tabConfig.VanillaPageIndex;
             _VanillaPageTitle = tabConfig.VanillaPageTitle;
             _Tab = tabConfig.MenuTab;

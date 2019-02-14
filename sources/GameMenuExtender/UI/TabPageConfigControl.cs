@@ -42,7 +42,7 @@ namespace GameMenuExtender.UI
 
             PageNameLabel = new SdvLabel() {
                 X = 76,
-                Y = 2,
+                Y = 3,
                 Font = new SdvFont(StardewValley.Game1.smallFont, false, true)
             };
             Controls.Add(PageNameLabel);
@@ -60,7 +60,7 @@ namespace GameMenuExtender.UI
 
             DownArrowBtn = new SdvButton()
             {
-                Y = 2,
+                Y = 0,
                 Padding = new Polymaker.SdvUI.Padding(8),
                 Image = SdvImages.DownArrow,
                 ImageScale = 2f,
@@ -70,7 +70,7 @@ namespace GameMenuExtender.UI
             
             UpArrowBtn = new SdvButton()
             {
-                Y = 2,
+                Y = 0,
                 Padding = new Polymaker.SdvUI.Padding(8),
                 Image = SdvImages.UpArrow,
                 ImageScale = 2f,
@@ -143,6 +143,11 @@ namespace GameMenuExtender.UI
             VisibleCheckbox.Enabled = !PageConfig.Visible || canHidePage;
             VisibleCheckbox.Checked = PageConfig.Visible;
 
+            if (TabConfig is VanillaTabConfig vanillaTab && !string.IsNullOrEmpty(vanillaTab.VanillaPageOverride))
+            {
+                VisibleCheckbox.Enabled = false;
+            }
+
             CanShowArrows = TabConfig.TabPages.Count(p => p.Visible) > 1;
       
             UpArrowBtn.Enabled = PageConfig.Index > 0;
@@ -155,7 +160,7 @@ namespace GameMenuExtender.UI
         protected override void OnDraw(SdvGraphics g)
         {
             UpArrowBtn.Visible = DownArrowBtn.Visible = CanShowArrows && (/*ContainsFocus || */MouseOver);
-            EditNameBtn.Visible = MouseOver;
+            //EditNameBtn.Visible = MouseOver;
             base.OnDraw(g);
         }
 

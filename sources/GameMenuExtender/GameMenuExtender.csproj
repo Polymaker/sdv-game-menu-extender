@@ -73,6 +73,7 @@
     <Compile Include="Compatibility\CompatibilityPatch.cs" />
     <Compile Include="Compatibility\GiftTasteHelperPatch.cs" />
     <Compile Include="Configs\ConfigBase.cs" />
+    <Compile Include="Configs\ConfigCollection.cs" />
     <Compile Include="Configs\ConfigManager.cs" />
     <Compile Include="Configs\Menu Configs\GameMenuElementConfig.cs" />
     <Compile Include="Configs\Menu Configs\CustomTabConfig.cs" />

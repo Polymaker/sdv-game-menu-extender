@@ -36,7 +36,7 @@ namespace GameMenuExtender.UI
             TabNameLabel = new SdvLabel()
             {
                 X = 52,
-                Y = 2,
+                Y = 3,
                 Font = new SdvFont(StardewValley.Game1.smallFont, false, true)
             };
 
@@ -52,16 +52,37 @@ namespace GameMenuExtender.UI
             };
             Controls.Add(EditNameBtn);
 
+
             VanillaOverrideCbo = new SdvComboBox()
             {
-                X = EditNameBtn.Bounds.Right + 16,
-                Y = 0,
-                Width = 200,
-                Visible = TabConfig.TabPages.Count > 1
+                X = ClientRectangle.Width - 308,
+                Y = 2,
+                Width = 300,
+                Visible = TabConfig.TabPages.Count > 1 && TabConfig.IsVanilla
             };
             Controls.Add(VanillaOverrideCbo);
-            VanillaOverrideCbo.DataSource = TabConfig.TabPages;
-            VanillaOverrideCbo.DisplayMember = "Title";
+
+            var defaultPageLbl = new SdvLabel()
+            {
+                X = 0,
+                Y = 3,
+                Font = new SdvFont(StardewValley.Game1.smallFont, false, true),
+                Text = "Page override:",
+                Visible = TabConfig.TabPages.Count > 1 && TabConfig.IsVanilla
+            };
+            Controls.Add(defaultPageLbl);
+            defaultPageLbl.X = VanillaOverrideCbo.X - defaultPageLbl.Width - 8;
+
+            if (TabConfig is VanillaTabConfig vanillaTab)
+            {
+                VanillaOverrideCbo.DataSource = TabConfig.TabPages;
+                VanillaOverrideCbo.DisplayMember = "DisplayName";
+                VanillaOverrideCbo.ValueMember = "Name";
+                VanillaOverrideCbo.SelectedValue = string.IsNullOrEmpty(vanillaTab.VanillaPageOverride) ? vanillaTab.VanillaPage.Name : vanillaTab.VanillaPageOverride;
+
+                VanillaOverrideCbo.SelectedIndexChanged += VanillaOverrideCbo_SelectedIndexChanged;
+            }
+            
 
             VisibleCheckbox = new SdvCheckbox()
             {
@@ -157,7 +178,6 @@ namespace GameMenuExtender.UI
                 currentY += pageCtrl.Height;
             }
         }
-       
 
         private void VisibleCheckbox_CheckChanged(object sender, EventArgs e)
         {
@@ -166,6 +186,23 @@ namespace GameMenuExtender.UI
             {
                 TabConfig.Visible = VisibleCheckbox.Checked;
                 RefreshInfo();
+            }
+        }
+
+        private void VanillaOverrideCbo_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!IsLoading)
+            {
+                if (VanillaOverrideCbo.SelectedItem is MenuTabPageConfig pageConfig)
+                {
+                    if (pageConfig.IsVanilla)
+                        (TabConfig as VanillaTabConfig).VanillaPageOverride = null;
+                    else
+                        (TabConfig as VanillaTabConfig).VanillaPageOverride = pageConfig.Name;
+                    if (!pageConfig.Visible)
+                        pageConfig.Visible = true;
+                    RefreshInfo();
+                }
             }
         }
 
@@ -191,7 +228,7 @@ namespace GameMenuExtender.UI
 
         protected override void OnDraw(SdvGraphics g)
         {
-            EditNameBtn.Visible = MouseOver && CursorPosition.Y < 40;
+            //EditNameBtn.Visible = MouseOver && CursorPosition.Y < 40;
             base.OnDraw(g);
         }
     }
