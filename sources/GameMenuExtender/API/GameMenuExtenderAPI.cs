@@ -17,7 +17,7 @@ namespace GameMenuExtender.API
         private IMonitor Monitor => Mod.Monitor;
         private GameMenuManager MenuManager => Mod.MenuManager;
 
-        private List<CustomMenuEntry> RegisterQueue;
+        private Queue<CustomMenuEntry> RegisterQueue;
 
         public event EventHandler CurrentTabPageChanged
         {
@@ -45,21 +45,22 @@ namespace GameMenuExtender.API
         internal GameMenuExtenderAPI(GameMenuExtenderMod mod)
         {
             Mod = mod;
-            RegisterQueue = new List<CustomMenuEntry>();
+            RegisterQueue = new Queue<CustomMenuEntry>();
         }
 
         internal void PerformRegistration()
         {
-			RegisterQueue = RegisterQueue
+			var orderedQueue = RegisterQueue
 				.OrderBy(m => m.Type == MenuType.TabPage)
 				.ThenBy(m => !string.IsNullOrEmpty(m.DependsOn)).ToList();
+            RegisterQueue.Clear();
+            RegisterQueue = new Queue<CustomMenuEntry>(orderedQueue);
 
-			while (RegisterQueue.Count > 0)
+            while (RegisterQueue.Count > 0)
             {
-				var entry = RegisterQueue[0];
-				RegisterQueue.RemoveAt(0);
+                var entry = RegisterQueue.Dequeue();
 
-				if (entry.Type == MenuType.Tab)
+                if (entry.Type == MenuType.Tab)
                     MenuManager.RegisterCustomTabPage(entry.Source, entry.TabName, entry.Label, entry.PageMenuClass);
                 else
                     MenuManager.RegisterTabPageExtension(entry.Source, entry.TabName, entry.PageName, entry.Label, entry.PageMenuClass);
@@ -85,7 +86,7 @@ namespace GameMenuExtender.API
 
             if (!MenuManager.HasInitialized)
             {
-                RegisterQueue.Add(new CustomMenuEntry
+                RegisterQueue.Enqueue(new CustomMenuEntry
                 {
                     Type = MenuType.Tab,
                     TabName = tabName,
@@ -121,7 +122,7 @@ namespace GameMenuExtender.API
 
             if (!MenuManager.HasInitialized)
             {
-				RegisterQueue.Add(new CustomMenuEntry
+				RegisterQueue.Enqueue(new CustomMenuEntry
 				{
 					Type = MenuType.TabPage,
 					TabName = tabName,

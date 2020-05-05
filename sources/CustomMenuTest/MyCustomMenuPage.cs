@@ -33,12 +33,56 @@ namespace CustomMenuTest
         {
             var cboTest = new SdvComboBox()
             {
-                Width = 150,
-                Height = 32
+                X = 30,
+                Y = 30,
+                Width = 180,
             };
             Controls.Add(cboTest);
-            cboTest.DataSource = new string[] { "Item #1", "Item #2" };
-            
+            cboTest.Height = cboTest.GetPreferredSize().Y;
+            cboTest.DataSource = new string[] { "Item #1", "Item #2", "Item #3" };
+            cboTest.SelectedIndex = 1;
+
+            var listView = new SdvListView()
+            {
+                X = 30,
+                Y = 100,
+                Width = width - 30 - GameMenuPadding.Horizontal,
+                Height = height - 100 - GameMenuPadding.Vertical
+            };
+            Controls.Add(listView);
+
+            listView.Columns.Add(new ListViewColumn()
+            {
+                 Text = "Col 1",
+                 Width = 200,
+                 HeaderAlignment = Polymaker.SdvUI.HorizontalAlignment.Right
+            });
+
+            listView.Columns.Add(new ListViewColumn()
+            {
+                Text = "Column #2",
+                Width = 0.4f,
+                TextAlignment = Polymaker.SdvUI.HorizontalAlignment.Center
+            });
+
+            listView.Columns.Add(new ListViewColumn()
+            {
+                Text = "Column #3",
+                Width = 0.4f,
+                HeaderAlignment = Polymaker.SdvUI.HorizontalAlignment.Center
+            });
+
+
+
+            var lvi = new ListViewItem("Hello");
+            lvi.SubItems.Add(new ListViewItem.ListViewSubItem("World"));
+            lvi.SubItems.Add(new ListViewItem.ListViewSubItem("!!!!"));
+            listView.Items.Add(lvi);
+            var rng = new Random();
+            for (int i = 0; i < 20; i++)
+            {
+                listView.Items.Add("Item #" + (i + 1), rng.Next(0,100).ToString(), "asdf");
+            }
         }
 
         //public override void draw(SpriteBatch b)

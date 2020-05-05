@@ -23,7 +23,13 @@ namespace GameMenuExtender.Compatibility
 
         public override bool IsAppliable()
         {
-            return Helper.ModRegistry.IsLoaded("tstaples.GiftTasteHelper");
+            bool modLoaded = Helper.ModRegistry.IsLoaded("tstaples.GiftTasteHelper");
+            if (modLoaded)
+            {
+                //var modVersion = Helper.ModRegistry.Get("tstaples.GiftTasteHelper").Manifest.Version;
+                return true;
+            }
+            return false;
         }
 
         public override bool InitializePatch()

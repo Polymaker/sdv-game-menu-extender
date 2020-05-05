@@ -24,7 +24,7 @@ namespace GameMenuExtender.Configs
 
         public abstract int Index { get; set; }
 
-        public string DisplayName => IsVanilla ? "None" : Title;
+        public string DisplayName => IsVanilla ? "None" : Title.Replace("\r\n", " ").Replace("\r", " ").Replace("\r", " ");
 
         protected MenuTabPageConfig(string name, string tabName)
             : base(name)

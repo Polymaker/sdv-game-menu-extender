@@ -113,13 +113,13 @@ namespace GameMenuExtender.UI
 
         private void VisibleCheckbox_CheckChanged(object sender, EventArgs e)
         {
-            VisibleCheckbox.TooltipText = PageConfig.Visible ? "Enabled" : "Hidden";
-
             if (!IsLoading)
             {
                 PageConfig.Visible = VisibleCheckbox.Checked;
                 OnVisibilityChanged();
             }
+
+            VisibleCheckbox.TooltipText = PageConfig.Visible ? "Enabled" : "Hidden";
         }
 
         public void RefreshInfo()

@@ -154,7 +154,8 @@ namespace GameMenuExtender.Configs
                 {
                     tabConfig = new CustomTabConfig((CustomTab)tab)
                     {
-                        Index = TabConfigs.Count(t => !t.IsVanilla)
+                        Index = TabConfigs.Count(t => !t.IsVanilla),
+                        Visible = true,
                     };
                     TabConfigs.Add(tabConfig);
                 }
@@ -176,7 +177,7 @@ namespace GameMenuExtender.Configs
         {
             CustomTabPageConfig tabPageConfig = TabPagesConfigs.FirstOrDefault(p => tabPage.NameEquals(p.Name) && tabPage.Tab.NameEquals(p.TabName));
 
-            if(tabPageConfig == null)
+            if (tabPageConfig == null)
             {
                 var tabConfig = TabConfigs.FirstOrDefault(c => tabPage.Tab.NameEquals(c.Name));
 
@@ -190,7 +191,8 @@ namespace GameMenuExtender.Configs
 
                 tabPageConfig = new CustomTabPageConfig(tabPage)
                 {
-                    Index = GetTabPagesConfig(tabPage.Tab).Count
+                    Index = GetTabPagesConfig(tabPage.Tab).Count,
+                    Visible = true
                 };
 
                 if (tabConfig is VanillaTabConfig vtc && vtc.VanillaPageIndex > 0)

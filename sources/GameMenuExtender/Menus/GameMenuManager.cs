@@ -271,17 +271,26 @@ namespace GameMenuExtender.Menus
 			CustomTabHost = null;
 			CurrentTabIndex = ActiveGameMenu.currentTab;
 
-			GameWindowBounds = new CreateMenuPageParams { X = ActiveGameMenu.xPositionOnScreen, Y = ActiveGameMenu.yPositionOnScreen, Width = ActiveGameMenu.width, Height = ActiveGameMenu.height };
-            if (ActiveGameMenu.junimoNoteIcon != null)
-                JuminoIconDefaultBounds = ActiveGameMenu.junimoNoteIcon.bounds;
-            else
-                JuminoIconDefaultBounds = Rectangle.Empty;
-            
-            //Override pages
-            GameMenuTabList = Helper.Reflection.GetField<List<ClickableComponent>>(ActiveGameMenu, "tabs").GetValue();
-            GameMenuPageList = Helper.Reflection.GetField<List<IClickableMenu>>(ActiveGameMenu, "pages").GetValue();
+			GameWindowBounds = new CreateMenuPageParams { 
+                X = ActiveGameMenu.xPositionOnScreen, 
+                Y = ActiveGameMenu.yPositionOnScreen, 
+                Width = ActiveGameMenu.width, 
+                Height = ActiveGameMenu.height 
+            };
 
-			bool alreadyExtended = false;
+            if (CurrentTabIndex == 3) // if opening map, the menu is larger
+                GameWindowBounds.Width -= 128;
+
+            //if (ActiveGameMenu.junimoNoteIcon != null)
+            //    JuminoIconDefaultBounds = ActiveGameMenu.junimoNoteIcon.bounds;
+            //else
+            //    JuminoIconDefaultBounds = Rectangle.Empty;
+
+            //Override pages
+            GameMenuTabList = ActiveGameMenu.tabs;
+            GameMenuPageList = ActiveGameMenu.pages;
+
+            bool alreadyExtended = false;
 
             for (int i = 0; i < VanillaTabs.Count; i++)
             {

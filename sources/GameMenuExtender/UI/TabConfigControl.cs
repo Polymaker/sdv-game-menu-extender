@@ -181,12 +181,13 @@ namespace GameMenuExtender.UI
 
         private void VisibleCheckbox_CheckChanged(object sender, EventArgs e)
         {
-            VisibleCheckbox.TooltipText = TabConfig.Visible ? "Enabled" : "Hidden";
             if (!IsLoading)
             {
                 TabConfig.Visible = VisibleCheckbox.Checked;
                 RefreshInfo();
             }
+
+            VisibleCheckbox.TooltipText = TabConfig.Visible ? "Enabled" : "Hidden";
         }
 
         private void VanillaOverrideCbo_SelectedIndexChanged(object sender, EventArgs e)
@@ -210,7 +211,11 @@ namespace GameMenuExtender.UI
         {
             IsLoading = true;
 
-            var cleanTitle = TabConfig.Title.Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
+            var cleanTitle = TabConfig.Title
+                .Replace("\r\n", " ")
+                .Replace("\r", " ")
+                .Replace("\n", " ")
+                .Replace("\t", " ");
 
             TabNameLabel.Text = $"Tab: {cleanTitle}";
 

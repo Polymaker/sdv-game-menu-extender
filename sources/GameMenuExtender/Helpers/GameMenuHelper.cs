@@ -16,18 +16,21 @@ namespace StardewValley.Menus
 
 		static GameMenuHelper()
 		{
-			PageField = typeof(GameMenu).GetField("pages", BindingFlags.NonPublic | BindingFlags.Instance);
+			PageField = typeof(GameMenu).GetField("pages", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
 		}
 
 		public static List<IClickableMenu> GetPages(this GameMenu menu)
 		{
-			return PageField.GetValue(menu) as List<IClickableMenu>;
+            
+
+            return PageField.GetValue(menu) as List<IClickableMenu>;
 		}
 
 		public static List<IClickableMenu> GetVanillaPages(this GameMenu menu)
 		{
-			var pages = GetPages(menu);
-			if (pages.OfType<GameMenuPageExtender>().Any())
+            var pages = menu.pages;//GetPages(menu);
+
+            if (pages.OfType<GameMenuPageExtender>().Any())
 			{
 				return pages.OfType<GameMenuPageExtender>().Select(p => p.MenuTab.VanillaPage.PageWindow).ToList();
 			}

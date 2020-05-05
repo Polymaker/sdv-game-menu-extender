@@ -79,6 +79,13 @@ namespace GameMenuExtender.Menus
 					}
 				}
             }
+
+            //switch (MenuTab.VanillaPage?.PageWindow)
+            //{
+            //    case InventoryPage invPage:
+            //        //invPage.junimoNoteIcon.
+            //        break;
+            //}
         }
 
 		#region IClickableMenu Redirection
